@@ -1,0 +1,51 @@
+<Application x:Class="XboxMetroLauncher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tabs="clr-namespace:XboxMetroLauncher.ViewModels.Tabs"
+             xmlns:views="clr-namespace:XboxMetroLauncher.Views.Tabs"
+             xmlns:converters="clr-namespace:XboxMetroLauncher.Themes"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/MetroTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
+            <converters:GameCoverStretchConverter x:Key="GameCoverStretchConverter" />
+            <converters:GameCoverImageSourceConverter x:Key="GameCoverImageSourceConverter" />
+            <converters:GameCoverBrushConverter x:Key="GameCoverBrushConverter" />
+            <converters:GameCoverInsetVisibilityConverter x:Key="GameCoverInsetVisibilityConverter" />
+            <converters:CropImageSourceConverter x:Key="CropImageSourceConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
+
+            <DataTemplate DataType="{x:Type tabs:BingTabViewModel}">
+                <views:BingTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:HomeTabViewModel}">
+                <views:HomeTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:SocialTabViewModel}">
+                <views:SocialTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:GamesTabViewModel}">
+                <views:GamesTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:MediaTabViewModel}">
+                <views:MediaTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:MusicTabViewModel}">
+                <views:MusicTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:AppsTabViewModel}">
+                <views:AppsTabView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type tabs:SettingsTabViewModel}">
+                <views:SettingsTabView />
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

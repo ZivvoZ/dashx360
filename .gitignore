@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+.vs/
+artifacts/
+publish/
+
+# Accidental local builds at repo root
+/XboxMetroLauncher.exe
+/XboxMetroLauncher.dll
+/XboxMetroLauncher.pdb
+
+# Local release folders
+Build/publish/
+Build/XboxMetroLauncher/
+Build/**/*.exe
+Build/**/*.dll
+Build/**/*.pdb
+
+# Logs and diagnostics
+*.log
+logs/
+Logs/
+discord-social-debug.log
+
+# User and machine-local data
+UserData/
+*.user
+*.suo
+*.cache
+Thumbs.db
+Desktop.ini
+
+# IDE noise
+.idea/
+.vscode/
+*.tmp
+*.bak
+*.orig
+
+# Local secrets/config overrides
+appsettings.Local.json
+appsettings.Development.json
+*.secrets.json

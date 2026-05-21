@@ -1,0 +1,250 @@
+<UserControl x:Class="XboxMetroLauncher.Views.Tabs.HomeTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Canvas x:Name="DashboardCanvas" Width="1280" Height="502" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Button Canvas.Left="-2" Canvas.Top="169" Width="56" Height="56"
+                Visibility="Collapsed"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenSearchCommand}">
+            <Grid Background="#FF555A5C">
+                <Path Stroke="#FFE9E9E9" StrokeThickness="4" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      Data="M18,18 A10,10 0 1 1 32,32 M30,30 L40,40" />
+            </Grid>
+        </Button>
+
+        <Canvas x:Name="HomeAlignedFrame" Canvas.Left="220" Canvas.Top="11" Width="764" Height="368" ClipToBounds="False">
+        <Button Canvas.Left="0" Canvas.Top="0" Width="177" Height="122"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.LaunchGameCommand}"
+                CommandParameter="{Binding Shell.TrayGame}">
+            <Grid Background="#FF008A00" ClipToBounds="True">
+                <Image Source="{Binding Shell.OpenTrayCoverArtPath, Converter={StaticResource StringToImageSourceConverter}}"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#66008A00" />
+                <Ellipse Width="56" Height="56" Fill="#E8FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-14,0,0" />
+                <Ellipse Width="14" Height="14" Fill="#FF008A00" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-14,0,0" />
+                <TextBlock Text="{Binding Shell.OpenTrayTitle}" FontSize="18" Foreground="White" Margin="13,0,0,10" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="0" Canvas.Top="123" Width="177" Height="122"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenMyPinsCommand}">
+            <Grid Background="#FF008A00">
+                <Image Source="{Binding Source='Assets/Misc/pin.png', Converter={StaticResource CropImageSourceConverter}, ConverterParameter='574;274;392;392'}"
+                      Stretch="Uniform"
+                      Width="38"
+                      Height="38"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Margin="0,-20,0,0" />
+                <TextBlock Text="My Pins" FontSize="17" Foreground="White" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="0" Canvas.Top="246" Width="177" Height="122"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.ShowDetailsCommand}">
+            <Grid Background="#FF008A00">
+                <Grid Width="36"
+                      Height="36"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Margin="0,-20,0,0">
+                    <Ellipse Stroke="#E8FFFFFF" StrokeThickness="4" />
+                    <Path Stroke="#E8FFFFFF"
+                          StrokeThickness="4"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Data="M18,8 L18,20 L27,20" />
+                </Grid>
+                <TextBlock Text="Recent" FontSize="17" Foreground="White" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="179" Canvas.Top="0" Width="423" Height="242"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FFBFD5D8" Offset="0" />
+                        <GradientStop Color="#FF3B5E65" Offset="0.34" />
+                        <GradientStop Color="#FF111A1D" Offset="0.78" />
+                        <GradientStop Color="#FF9EAEB0" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/halo4home.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#24000000" Offset="0" />
+                            <GradientStop Color="#00000000" Offset="0.48" />
+                            <GradientStop Color="#A8000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="30" VerticalAlignment="Bottom" Fill="#C9000000" />
+                <TextBlock Text="Halo 4" FontSize="17" Foreground="White" Margin="8,0,0,6" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="179" Canvas.Top="244" Width="210" Height="124"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF2D100D" Offset="0" />
+                        <GradientStop Color="#FFE27522" Offset="0.5" />
+                        <GradientStop Color="#FF321A16" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/dexterhome.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#28000000" Offset="0.55" />
+                            <GradientStop Color="#B0000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="30" VerticalAlignment="Bottom" Fill="#C9000000" />
+                <TextBlock Text="Dexter" FontSize="17" Foreground="White" Margin="8,0,0,6" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="391" Canvas.Top="244" Width="211" Height="124"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FFCFCFCF" Offset="0" />
+                        <GradientStop Color="#FF50606F" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/maroon5home.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#30000000" Offset="0.62" />
+                            <GradientStop Color="#B0000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="30" VerticalAlignment="Bottom" Fill="#C9000000" />
+                <TextBlock Text="Maroon 5" FontSize="17" Foreground="White" Margin="8,0,0,6" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="604" Canvas.Top="0" Width="160" Height="122"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF171A5C" Offset="0" />
+                        <GradientStop Color="#FF9333C4" Offset="0.5" />
+                        <GradientStop Color="#FF10103A" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/dancecentralhome.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#24000000" Offset="0.58" />
+                            <GradientStop Color="#B0000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="30" VerticalAlignment="Bottom" Fill="#C9000000" />
+                <TextBlock Text="Kinect Central" FontSize="16" Foreground="White" Margin="8,0,0,6" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="604" Canvas.Top="123" Width="160" Height="122"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="91" />
+                    <RowDefinition Height="31" />
+                </Grid.RowDefinitions>
+                <Image Grid.RowSpan="2"
+                       Source="pack://siteoforigin:,,,/Assets/Tiles/espn.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Grid.RowSpan="2">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#10000000" Offset="0.58" />
+                            <GradientStop Color="#B0000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Border Grid.Row="1" Background="#FF6F1414">
+                    <TextBlock Text="Sports" FontSize="16" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="604" Canvas.Top="246" Width="160" Height="122"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenYouTubeCommand}">
+            <Grid Background="White" ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/youtubehome.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#00000000" Offset="0.58" />
+                            <GradientStop Color="#78000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Grid>
+        </Button>
+
+        </Canvas>
+
+        <StackPanel Canvas.Left="1115" Canvas.Top="11" Visibility="Collapsed">
+            <Button Width="177" Height="122" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF3AAA35">
+                    <TextBlock Text="Friends" FontSize="17" Foreground="White" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+                    <Path Fill="#DDFFFFFF" Stretch="Uniform" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Data="M17,3 A7,7 0 1 1 16.9,3 M7,34 C8,24 26,24 27,34 Z M30,8 A6,6 0 1 1 29.9,8 M24,32 C25,25 39,25 40,32 Z" />
+                </Grid>
+            </Button>
+            <Button Width="177" Height="122" Margin="0,1,0,0" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF3AAA35">
+                    <TextBlock Text="Avatar" FontSize="17" Foreground="White" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+                </Grid>
+            </Button>
+            <Button Width="177" Height="122" Margin="0,1,0,0" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF3AAA35">
+                    <TextBlock Text="Sign In" FontSize="17" Foreground="White" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+                </Grid>
+            </Button>
+        </StackPanel>
+    </Canvas>
+    </Grid>
+</UserControl>

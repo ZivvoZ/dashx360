@@ -1,0 +1,76 @@
+<UserControl x:Class="XboxMetroLauncher.Views.Tabs.BingTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Canvas x:Name="DashboardCanvas" Width="1280" Height="502" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas x:Name="HomeAlignedFrame" Canvas.Left="198" Canvas.Top="11" Width="764" Height="368" ClipToBounds="False">
+                <Canvas x:Name="ContentTileLayer" Canvas.Left="0" Canvas.Top="0" Width="764" Height="368">
+                    <TextBlock Text="Search Xbox for games, movies, music and apps"
+                               Canvas.Left="180"
+                               Canvas.Top="93"
+                               Foreground="#BFFFFFFF"
+                               FontSize="19"
+                               FontWeight="Light" />
+                    <TextBlock Text="bing"
+                               Canvas.Left="0"
+                               Canvas.Top="137"
+                               Foreground="#F2FFFFFF"
+                               FontSize="44"
+                               FontWeight="Light" />
+
+                    <Border x:Name="SearchBoxFrame"
+                            Canvas.Left="179"
+                            Canvas.Top="123"
+                            Width="585"
+                            Height="92"
+                            BorderBrush="#C9FFFFFF"
+                            BorderThickness="2"
+                            Background="#C8000000"
+                            MouseLeftButtonDown="SearchBoxFrame_OnMouseLeftButtonDown">
+                        <Grid>
+                            <TextBox x:Name="BingSearchBox"
+                                     Text="{Binding Shell.SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="#F2FFFFFF"
+                                     CaretBrush="White"
+                                     FontSize="40"
+                                     FontWeight="Light"
+                                     Padding="28,18,84,0"
+                                     KeyDown="BingSearchBox_OnKeyDown" />
+                            <Path Stroke="#F2FFFFFF"
+                                  StrokeThickness="5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,34,0"
+                                  Width="50"
+                                  Height="50"
+                                  Data="M17,17 A14,14 0 1 1 36,36 M34,34 L47,47" />
+                        </Grid>
+                    </Border>
+
+                    <Button Canvas.Left="681"
+                            Canvas.Top="123"
+                            Width="83"
+                            Height="92"
+                            Opacity="0"
+                            Command="{Binding SubmitSearchCommand}" />
+
+                    <StackPanel Canvas.Left="179" Canvas.Top="236" Orientation="Horizontal">
+                        <Border Width="136" Height="54" Background="#55333333" Margin="0,0,6,0">
+                            <TextBlock Text="Halo 4" Foreground="#DFFFFFFF" FontSize="17" Margin="12,0,0,8" VerticalAlignment="Bottom" />
+                        </Border>
+                        <Border Width="136" Height="54" Background="#55333333" Margin="0,0,6,0">
+                            <TextBlock Text="Netflix" Foreground="#DFFFFFFF" FontSize="17" Margin="12,0,0,8" VerticalAlignment="Bottom" />
+                        </Border>
+                        <Border Width="136" Height="54" Background="#55333333" Margin="0,0,6,0">
+                            <TextBlock Text="Minecraft" Foreground="#DFFFFFFF" FontSize="17" Margin="12,0,0,8" VerticalAlignment="Bottom" />
+                        </Border>
+                    </StackPanel>
+                </Canvas>
+            </Canvas>
+        </Canvas>
+    </Grid>
+</UserControl>

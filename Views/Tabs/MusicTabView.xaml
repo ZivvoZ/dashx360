@@ -1,0 +1,88 @@
+<UserControl x:Class="XboxMetroLauncher.Views.Tabs.MusicTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Canvas x:Name="DashboardCanvas" Width="1280" Height="502" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Button Canvas.Left="236" Canvas.Top="76" Width="148" Height="148"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenMusicPlayerCommand}">
+            <Grid Background="#FF61B914">
+                <Image Source="{Binding Source='Assets/Misc/music.png', Converter={StaticResource CropImageSourceConverter}, ConverterParameter='250;210;460;540'}"
+                       Stretch="Uniform"
+                       Width="58"
+                       Height="58"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,-12,0,0" />
+                <TextBlock Text="My Music" Foreground="White" FontSize="22" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="236" Canvas.Top="226" Width="148" Height="148"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF61B914">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/Marketplace/music_marketplace.png"
+                       Width="58"
+                       Height="58"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,26,0,0" />
+                <TextBlock Text="Music&#x0a;Marketplace" Foreground="White" FontSize="22" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="386" Canvas.Top="76" Width="306" Height="298"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF232323" Offset="0" />
+                        <GradientStop Color="#FF6E2B82" Offset="0.48" />
+                        <GradientStop Color="#FF0D0D0D" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/overexposedmusic.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#33000000" />
+                <Rectangle Height="56" VerticalAlignment="Bottom" Fill="#A0000000" />
+                <TextBlock Text="Now Playing" Foreground="White" FontSize="23" Margin="12,0,0,24" VerticalAlignment="Bottom" />
+                <TextBlock Text="Maroon 5 - Overexposed" Foreground="#DFFFFFFF" FontSize="16" Margin="12,0,0,8" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="694" Canvas.Top="76" Width="158" Height="148"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF2F6F9F" ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/evanescencerecent.png"
+                       Stretch="UniformToFill"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#33000000" />
+                <TextBlock Text="recent" Foreground="White" FontSize="22" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="854" Canvas.Top="76" Width="188" Height="148"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenSearchCommand}">
+            <Grid Background="#FF191919">
+                <TextBlock Text="search" Foreground="White" FontSize="23" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="694" Canvas.Top="226" Width="348" Height="148"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FFE8E8E8" ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/panchikomusic.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#55FFFFFF" />
+                <TextBlock Text="music apps" Foreground="#FF303030" FontSize="24" Margin="14,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+    </Canvas>
+    </Grid>
+</UserControl>

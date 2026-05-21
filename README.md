@@ -1,59 +1,90 @@
-# DashX360, an Xbox 360 Metro Dashboard for Windows
+# DashX360 — Xbox Metro Dashboard for Windows
 
-The first fanmade recreation of the Xbox 360 metro dashboard experience for Windows with controller support, working menus, and an in-game Guide overlay.
+Created by [ZivvoZ](https://youtube.com/@zivvoz)
 
-If you like my work, feel free to donate to my ko-fi! however money will never be needed to use this!
-https://Ko-fi.com/zivvoz
+If you like this project, donations are welcome but never required: [ko-fi.com/zivvoz](https://ko-fi.com/zivvoz)
 
-## How to Use
-
-1. Launch the application.
-2. Connect your controller.
-3. In Steam, turn off **Enable Guide Button Chords for controllers**.
-4. Use the Back + Start buttons together (or Win + Left Shift + Left Ctrl) to open the Guide.
-5. Navigate with the controller just like the original Xbox 360 dashboard.
+DashX360 is a fan-made Windows recreation of the Xbox 360 Metro dashboard: big tiles, controller navigation, Guide overlays, and the panel-based layout from that era.
 
 ## Features
 
-* Functional Home menu
-* Top tabs: Bing, Home, Social, Video, Games, Music, Apps, Settings
-* Bing search tab
-* Games menu
-* Music app (lacks visualizer)
-* Settings menu
-* Functional Xbox Guide overlay
-* Guide can be opened while a game is running and the dashboard is minimized
-* Open Tray option launches a selected game like a disc was inserted
-* Change which game appears in Open Tray through Settings
-* Change game cover art in Settings
-* Change Home tile artwork in Settings
-* Controller-friendly navigation
-* Xbox 360-inspired UI and layout
+- Dashboard tabs: Bing, Home, Social, Video, Games, Music, Apps, Settings
+- Controller-first navigation with keyboard and mouse support
+- Xbox Guide overlay (Friends, Party, Profile, search)
+- Local profile and friend data with cached gamer pictures
+- Boot video, dashboard audio cues, and Metro-style tiles
+- Open Tray launches a selected game like a disc was inserted
+- Customize Open Tray game, cover art, and Home tile artwork in Settings
 
-## Working on the Project
+## Quick start
 
-DashX360 is open for people who want to help improve it.
-If you use this project, modify it, or build on top of it, please credit the original project and creator:
+1. Build or download a release build (see [Building](#building) below).
+2. Launch the app (best in fullscreen).
+3. Connect a controller.
+4. In Steam, disable **Enable Guide Button Chords for controllers** if you use Steam.
+5. Open the Guide with **Back + Start** together, or **Win + Left Shift + Left Ctrl**.
+6. Navigate with the controller like the original Xbox 360 dashboard.
 
-**Original project by zivvoz / DashX360**
+## Controls
 
-Do not reupload or redistribute modified versions in a way that makes it look like you created the original project from scratch.
+| Input | Action |
+| --- | --- |
+| `A` / `Enter` | Select |
+| `B` / `Escape` | Back |
+| `X` | Context actions where available |
+| `Y` | Secondary actions where available |
+| Back + Start / hotkey | Open Xbox Guide |
+| Mouse | Tiles, buttons, and popup menus |
 
-## Legal Notice
+## Building
 
-* This is an unofficial fan-made project created for nostalgia and educational purposes.
-* Xbox, Xbox 360, and related names, logos, and designs are property of Microsoft.
-* No affiliation with or endorsement by Microsoft is claimed or implied.
-* This project is distributed free of charge.
-* If any rights holder requests changes or removal, comply promptly.
-* Users are responsible for following local laws and platform terms when downloading or sharing.
+### Requirements
 
-## Notes
+- Windows 10 or Windows 11
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Visual Studio 2022 or the .NET CLI
 
-* Best experienced in fullscreen.
-* Some features are still being improved.
-* This project is a fan-made recreation for nostalgia and personal use.
+### Commands
+
+```powershell
+dotnet restore XboxMetroLauncher.sln
+dotnet build XboxMetroLauncher.sln -c Release
+```
+
+To publish a self-contained release folder:
+
+```powershell
+.\Build\Publish-PublicRelease.ps1
+```
+
+Output is written to `Build\publish\` by default. Pass `-OutputDir` to override.
+
+## Configuration
+
+- Settings, profile, and library data are stored outside the repository at runtime.
+- This public release uses local-only social and profile data.
+- Seed game library: `Data\library.seed.json` (copied on first run).
+
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| `Assets/` | Tiles, audio, boot video, profile placeholders |
+| `Data/` | Seed JSON for the game library |
+| `Build/` | Publish script (not committed build output) |
+| `Docs/` | Changelog, asset audit, screenshot placeholders |
+
+See [Docs/ASSET_AUDIT.md](Docs/ASSET_AUDIT.md) before redistributing bundled media.
+
+## Legal / disclaimer
+
+This is an unofficial, non-commercial fan project. Xbox, Xbox 360, Xbox LIVE, Microsoft, and related names, logos, and imagery are property of Microsoft. This project is not affiliated with, endorsed by, or sponsored by Microsoft.
+
+Some bundled art, sounds, and reference assets may be derived from commercial software, media, or platform branding. Replace any assets you do not have the right to redistribute before publishing your own build or fork.
+
+This repository is intended for educational, preservation, and fan-project purposes. If a rights holder requests changes or removal, comply promptly.
 
 ## Credits
 
-Inspired by the Xbox 360 dashboard by Microsoft.
+- Original app concept, implementation, and cleanup by the project author and contributors
+- Visual inspiration from the Xbox 360 Metro dashboard by Microsoft

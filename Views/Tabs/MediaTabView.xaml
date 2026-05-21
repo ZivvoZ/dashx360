@@ -1,0 +1,107 @@
+<UserControl x:Class="XboxMetroLauncher.Views.Tabs.MediaTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Canvas x:Name="DashboardCanvas" Width="1280" Height="502" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Button Canvas.Left="236" Canvas.Top="76" Width="146" Height="148" Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF61B914" ClipToBounds="True">
+                <Image Source="{Binding Source='Assets/Tiles/Marketplace/my video apps.png', Converter={StaticResource CropImageSourceConverter}, ConverterParameter='514;280;506;392'}"
+                       Width="62"
+                       Height="48"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,27,0,0" />
+                <Rectangle Fill="#22000000" />
+                <TextBlock Text="My Video&#x0a;Apps" Foreground="White" FontSize="22" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="236" Canvas.Top="226" Width="146" Height="148" Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF61B914">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/Marketplace/video_marketplace.png"
+                       Width="58"
+                       Height="58"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,26,0,0" />
+                <TextBlock Text="Video&#x0a;Marketplace" Foreground="White" FontSize="22" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="384" Canvas.Top="73" Width="308" Height="301" Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FFF2F0E8" Offset="0" />
+                        <GradientStop Color="#FFB59F80" Offset="0.5" />
+                        <GradientStop Color="#FF201712" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/thedarkkightvideo.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#18000000" Offset="0.54" />
+                            <GradientStop Color="#A8000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="46" VerticalAlignment="Bottom" Fill="#82000000" />
+                <TextBlock Text="The Dark Knight" Foreground="White" FontSize="19" Margin="12,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="694" Canvas.Top="73" Width="148" Height="150" Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF33434A" ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/cloudywithachanceofmeatballsvideo.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#55000000" />
+                <TextBlock Text="Cloudy with a&#x0a;Chance of Meatballs" Foreground="White" FontSize="16" Margin="10,0,8,12" VerticalAlignment="Bottom" TextWrapping="Wrap" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="844" Canvas.Top="73" Width="198" Height="150" Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="White">
+                <Path Fill="#FF59B631" Data="M0,115 C70,28 132,82 198,4 L198,150 L0,150 Z" />
+                <TextBlock Text="Recent" Foreground="#FF2B2B2B" FontSize="30" Margin="20,48,0,0" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="694" Canvas.Top="225" Width="148" Height="149" Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FFE9C330" ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/kungfupanda2video.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#44000000" />
+                <TextBlock Text="HD" Foreground="#AAFFFFFF" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <TextBlock Text="Kung Fu&#x0a;Panda 2" Foreground="White" FontSize="21" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="844" Canvas.Top="225" Width="198" Height="149" Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/hbogovideo.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <TextBlock Text="ADVERTISEMENT" Foreground="#FFBFC4C2" FontSize="13" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="0,0,0,-22" />
+            </Grid>
+        </Button>
+
+        <StackPanel Canvas.Left="1200" Canvas.Top="76" Opacity="0.66" Visibility="Collapsed">
+            <Button Width="150" Height="148" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF4B9229"><TextBlock Text="My Games" Foreground="White" FontSize="20" Margin="10,0,0,12" VerticalAlignment="Bottom" /></Grid>
+            </Button>
+            <Button Width="150" Height="148" Margin="0,2,0,0" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF4B9229"><TextBlock Text="Game&#x0a;Marketplace" Foreground="White" FontSize="20" Margin="10,0,0,12" VerticalAlignment="Bottom" /></Grid>
+            </Button>
+        </StackPanel>
+    </Canvas>
+    </Grid>
+</UserControl>

@@ -1,0 +1,115 @@
+<UserControl x:Class="XboxMetroLauncher.Views.Tabs.GamesTabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Canvas x:Name="DashboardCanvas" Width="1280" Height="502" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <StackPanel Canvas.Left="-40" Canvas.Top="76" Opacity="0.48" Visibility="Collapsed">
+            <Button Width="155" Height="148" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FFFFFFFF">
+                    <TextBlock Text="XBOX" Foreground="#FF528E38" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+            </Button>
+        </StackPanel>
+
+        <Button Canvas.Left="258" Canvas.Top="74" Width="155" Height="153"
+                Style="{StaticResource X360TileButtonStyle}"
+                Command="{Binding Shell.OpenMyGamesCommand}">
+            <Grid Background="#FF61B914">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/Marketplace/mygames.png"
+                       Width="72"
+                       Height="72"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,-18,0,0" />
+                <TextBlock Text="My Games" Foreground="White" FontSize="22" Margin="15,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="258" Canvas.Top="229" Width="155" Height="149"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid Background="#FF61B914">
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/Marketplace/game_marketplace.png"
+                       Width="58"
+                       Height="58"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"
+                       Margin="0,24,0,0" />
+                <TextBlock Text="Game&#x0a;Marketplace" Foreground="White" FontSize="22" Margin="15,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="415" Canvas.Top="74" Width="400" Height="303"
+                Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FFE9F0EA" Offset="0" />
+                        <GradientStop Color="#FF7E968C" Offset="0.32" />
+                        <GradientStop Color="#FF17201C" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/forzahorizongames.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#44000000" />
+                <Rectangle Height="78" VerticalAlignment="Bottom" Fill="#8F000000" />
+                <TextBlock Text="Forza Horizon" Foreground="White" FontSize="24" Margin="10,0,0,42" VerticalAlignment="Bottom" />
+                <TextBlock Text="December IGN Pack" Foreground="#DFFFFFFF" FontSize="24" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+
+        <Button Canvas.Left="817" Canvas.Top="74" Width="200" Height="151" Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF0F2719" Offset="0" />
+                        <GradientStop Color="#FF6A8D36" Offset="0.6" />
+                        <GradientStop Color="#FF131814" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/minecraftgames.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#33000000" />
+                <TextBlock Text="Minecraft" Foreground="White" FontSize="20" Margin="10,0,0,14" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <Button Canvas.Left="817" Canvas.Top="227" Width="200" Height="150" Style="{StaticResource X360TileButtonStyle}">
+            <Grid ClipToBounds="True">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF1B1B1F" Offset="0" />
+                        <GradientStop Color="#FF376B7B" Offset="0.52" />
+                        <GradientStop Color="#FF111111" Offset="1" />
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Image Source="pack://siteoforigin:,,,/Assets/Tiles/blackops2games.jpg"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <Rectangle Fill="#33000000" />
+                <TextBlock Text="Black Ops II" Foreground="White" FontSize="20" Margin="10,0,0,14" VerticalAlignment="Bottom" />
+            </Grid>
+        </Button>
+        <TextBlock Canvas.Left="820" Canvas.Top="387" Text="ADVERTISEMENT" Foreground="#FFBFC4C2" FontSize="13" />
+
+        <StackPanel Canvas.Left="1200" Canvas.Top="74" Opacity="0.66" Visibility="Collapsed">
+            <Button Width="155" Height="151" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF4B9229">
+                    <TextBlock Text="My Apps" Foreground="White" FontSize="20" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+                </Grid>
+            </Button>
+            <Button Width="155" Height="151" Margin="0,2,0,0" Style="{StaticResource X360TileButtonStyle}">
+                <Grid Background="#FF4B9229">
+                    <TextBlock Text="Apps&#x0a;Marketplace" Foreground="White" FontSize="20" Margin="10,0,0,12" VerticalAlignment="Bottom" />
+                </Grid>
+            </Button>
+        </StackPanel>
+    </Canvas>
+    </Grid>
+</UserControl>

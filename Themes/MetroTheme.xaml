@@ -1,0 +1,314 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="MetroGreenColor">#FF008A00</Color>
+    <Color x:Key="MetroGreenDarkColor">#FF0D5F25</Color>
+    <Color x:Key="MetroTextColor">#FFF7F7F7</Color>
+    <Color x:Key="MetroMutedTextColor">#FFC9D1C9</Color>
+    <Color x:Key="MetroPanelColor">#D916191A</Color>
+
+    <SolidColorBrush x:Key="MetroGreenBrush" Color="{StaticResource MetroGreenColor}" />
+    <SolidColorBrush x:Key="MetroGreenDarkBrush" Color="{StaticResource MetroGreenDarkColor}" />
+    <SolidColorBrush x:Key="MetroTextBrush" Color="{StaticResource MetroTextColor}" />
+    <SolidColorBrush x:Key="MetroMutedTextBrush" Color="{StaticResource MetroMutedTextColor}" />
+    <SolidColorBrush x:Key="MetroPanelBrush" Color="{StaticResource MetroPanelColor}" />
+    <SolidColorBrush x:Key="MetroTileBorderBrush" Color="#55FFFFFF" />
+    <SolidColorBrush x:Key="MetroTilePressedBrush" Color="#CC0B471E" />
+
+    <LinearGradientBrush x:Key="DashboardBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FF3C4143" Offset="0" />
+        <GradientStop Color="#FF666B6D" Offset="0.42" />
+        <GradientStop Color="#FFC7C9C8" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GlassPanelBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#66FFFFFF" Offset="0" />
+        <GradientStop Color="#14141616" Offset="0.18" />
+        <GradientStop Color="#77000000" Offset="1" />
+    </LinearGradientBrush>
+
+    <Style TargetType="{x:Type Window}">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="DashboardTitleText" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource MetroTextBrush}" />
+        <Setter Property="FontSize" Value="44" />
+        <Setter Property="FontWeight" Value="Light" />
+    </Style>
+
+    <Style x:Key="SectionHeaderText" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource MetroTextBrush}" />
+        <Setter Property="FontSize" Value="23" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="Margin" Value="0,20,0,12" />
+    </Style>
+
+    <Style x:Key="MutedText" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource MetroMutedTextBrush}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="TabButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Foreground" Value="#72FFFFFF" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Padding" Value="0,0" />
+        <Setter Property="FontSize" Value="27" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Grid x:Name="TabRoot"
+                          Height="{TemplateBinding Height}"
+                          RenderTransformOrigin="0.5,0.55">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <Border x:Name="SelectedBar" Height="0" VerticalAlignment="Bottom"
+                                Background="{StaticResource MetroGreenBrush}" Opacity="0" />
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Top"
+                                          Margin="0,-2,0,0"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Shell.UseLightDashboardChrome}" Value="True">
+                            <Setter Property="Foreground" Value="#7B3F4548" />
+                        </DataTrigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter Property="Foreground" Value="#F2FFFFFF" />
+                            <Setter TargetName="SelectedBar" Property="Opacity" Value="0.75" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="#F2FFFFFF" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="TabRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1.025"
+                                                         Duration="0:0:0.18">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TabRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1.025"
+                                                         Duration="0:0:0.18">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="TabRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1"
+                                                         Duration="0:0:0.13">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TabRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1"
+                                                         Duration="0:0:0.13">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                            <Setter Property="Foreground" Value="#F2FFFFFF" />
+                            <Setter TargetName="SelectedBar" Property="Opacity" Value="0" />
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Shell.UseLightDashboardChrome}" Value="True" />
+                                <Condition Binding="{Binding IsSelected}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Foreground" Value="#E6404548" />
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TabGhostTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="#FFFFFFFF" />
+        <Setter Property="FontSize" Value="27" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Margin" Value="0,-2,0,0" />
+    </Style>
+
+    <Style x:Key="MetroActionButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{StaticResource MetroGreenBrush}" />
+        <Setter Property="BorderBrush" Value="#AAFFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Padding" Value="20,10" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="Root" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Root" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="White" Opacity="0.45" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource MetroTilePressedBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MetroTextBoxStyle" TargetType="{x:Type TextBox}">
+        <Setter Property="Foreground" Value="#FF1D1D1D" />
+        <Setter Property="Background" Value="#EEFFFFFF" />
+        <Setter Property="BorderBrush" Value="#99FFFFFF" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="Padding" Value="18,10" />
+        <Setter Property="CaretBrush" Value="{StaticResource MetroGreenBrush}" />
+    </Style>
+
+    <Style x:Key="MetroCheckBoxStyle" TargetType="{x:Type CheckBox}">
+        <Setter Property="Foreground" Value="{StaticResource MetroTextBrush}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Margin" Value="0,8" />
+    </Style>
+
+    <Style x:Key="X360TileButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Grid x:Name="TileRoot" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <ContentPresenter />
+                        <Border x:Name="FocusFrame"
+                                BorderBrush="White"
+                                BorderThickness="3"
+                                Opacity="0" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusFrame"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.9"
+                                                         Duration="0:0:0.13">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TileRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1.012"
+                                                         Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TileRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1.012"
+                                                         Duration="0:0:0.16">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusFrame"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0"
+                                                         Duration="0:0:0.10">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseIn" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TileRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="TileRoot"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1"
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <SineEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="FocusFrame" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect BlurRadius="7" ShadowDepth="0" Color="White" Opacity="0.18" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Panel.ZIndex" Value="10" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Opacity" Value="0.82" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

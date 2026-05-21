@@ -1,0 +1,184 @@
+<UserControl x:Class="XboxMetroLauncher.Controls.MetroTile"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Width="{Binding TileWidth, ElementName=Root}"
+             Height="{Binding TileHeight, ElementName=Root}"
+             Focusable="False">
+    <Button x:Name="TileButton"
+            Command="{Binding Command, ElementName=Root}"
+            CommandParameter="{Binding CommandParameter, ElementName=Root}"
+            Focusable="True"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            BorderThickness="1"
+            BorderBrush="{StaticResource MetroTileBorderBrush}"
+            Background="{Binding TileBrush, ElementName=Root}"
+            GotKeyboardFocus="TileButton_OnGotKeyboardFocus">
+        <Button.RenderTransform>
+            <ScaleTransform x:Name="TileScale" ScaleX="1" ScaleY="1" />
+        </Button.RenderTransform>
+        <Button.RenderTransformOrigin>0.5,0.5</Button.RenderTransformOrigin>
+        <Button.Template>
+            <ControlTemplate TargetType="{x:Type Button}">
+                <Border x:Name="Outer"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="2"
+                        ClipToBounds="True">
+                    <Grid>
+                        <Rectangle Fill="{StaticResource GlassPanelBrush}" />
+                        <Image Source="{Binding ImagePath, ElementName=Root, Converter={StaticResource StringToImageSourceConverter}}"
+                               Stretch="UniformToFill"
+                               Opacity="0.9" />
+                        <Rectangle VerticalAlignment="Bottom" Height="80">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#00000000" Offset="0" />
+                                    <GradientStop Color="#B8000000" Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <StackPanel VerticalAlignment="Bottom" Margin="14,0,14,12">
+                            <TextBlock Text="{Binding Title, ElementName=Root}"
+                                       Foreground="White"
+                                       FontSize="22"
+                                       FontWeight="Light"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Subtitle, ElementName=Root}"
+                                       Foreground="#DDEEEEEE"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="{Binding Subtitle, ElementName=Root, Converter={StaticResource EmptyToVisibilityConverter}}" />
+                        </StackPanel>
+                        <Border x:Name="FocusChrome"
+                                BorderBrush="#FFFFFFFF"
+                                BorderThickness="4"
+                                Opacity="0"
+                                CornerRadius="2" />
+                        <Border x:Name="InnerFocusChrome"
+                                BorderBrush="#AA79E35D"
+                                BorderThickness="2"
+                                Margin="5"
+                                Opacity="0"
+                                CornerRadius="1" />
+                        <Rectangle VerticalAlignment="Top" Height="42" Opacity="0.28">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FFFFFFFF" Offset="0" />
+                                    <GradientStop Color="#00FFFFFF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="FocusChrome"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     Duration="0:0:0.15">
+                                        <DoubleAnimation.EasingFunction>
+                                            <SineEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="InnerFocusChrome"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0.9"
+                                                     Duration="0:0:0.18">
+                                        <DoubleAnimation.EasingFunction>
+                                            <SineEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="FocusChrome"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     Duration="0:0:0.12">
+                                        <DoubleAnimation.EasingFunction>
+                                            <SineEase EasingMode="EaseIn" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="InnerFocusChrome"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     Duration="0:0:0.12">
+                                        <DoubleAnimation.EasingFunction>
+                                            <SineEase EasingMode="EaseIn" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                        <Setter TargetName="Outer" Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect BlurRadius="36" ShadowDepth="0" Color="White" Opacity="0.62" />
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="Outer" Property="Opacity" Value="0.82" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Outer" Property="Opacity" Value="0.45" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Button.Template>
+        <Button.Triggers>
+            <EventTrigger RoutedEvent="Button.GotKeyboardFocus">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="TileScale"
+                                         Storyboard.TargetProperty="ScaleX"
+                                         To="1.055"
+                                         Duration="0:0:0.16">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="TileScale"
+                                         Storyboard.TargetProperty="ScaleY"
+                                         To="1.055"
+                                         Duration="0:0:0.16">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="Button.LostKeyboardFocus">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="TileScale"
+                                         Storyboard.TargetProperty="ScaleX"
+                                         To="1"
+                                         Duration="0:0:0.13">
+                            <DoubleAnimation.EasingFunction>
+                                <SineEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <DoubleAnimation Storyboard.TargetName="TileScale"
+                                         Storyboard.TargetProperty="ScaleY"
+                                         To="1"
+                                         Duration="0:0:0.13">
+                            <DoubleAnimation.EasingFunction>
+                                <SineEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Button.Triggers>
+    </Button>
+</UserControl>
