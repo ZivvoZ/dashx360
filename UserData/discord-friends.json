@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "discord:metrofriend",
+    "DisplayName": "MetroFriend",
+    "Source": 1,
+    "AvatarPathOrUrl": "C:\\Metro\\Assets\\Profile\\profilepicture.jpg",
+    "IsOnline": false,
+    "StatusText": "Offline",
+    "ActivityText": "Last seen on Discord",
+    "GamerscoreText": "0 G",
+    "ReputationText": "\u2605\u2605\u2605\u2605\u2606",
+    "ZoneText": "Party",
+    "IdentityDetailText": "Discord",
+    "IsPartyHost": false,
+    "ShowVoiceIndicator": true,
+    "CurrentActivityText": "Last seen on Discord"
+  }
+]

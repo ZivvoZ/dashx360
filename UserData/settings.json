@@ -1,0 +1,21 @@
+{
+  "StartFullscreen": true,
+  "PlayUiSounds": true,
+  "EnableControllerInput": true,
+  "LaunchOnWindowsStartup": false,
+  "ThemeName": "Xbox 360",
+  "BingSearchBaseUrl": "https://www.bing.com/search?q=",
+  "DisplayResolution": "1080p",
+  "OpenTrayGameId": "",
+  "GameCoverFitMode": "Fit",
+  "DefaultAddDestination": "My Games",
+  "SocialIntegrationMode": 0,
+  "DiscordConnectionState": 0,
+  "DiscordConnected": false,
+  "DiscordUserId": "",
+  "DiscordDisplayName": "",
+  "DiscordAvatarPathOrUrl": "",
+  "DiscordAccessTokenEncrypted": "",
+  "DiscordGrantedScopes": "",
+  "DiscordTokenType": ""
+}
