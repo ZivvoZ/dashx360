@@ -1,0 +1,98 @@
+name: Release DashX360
+
+on:
+  push:
+    tags:
+      - "v*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Assemble release folder
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -match "^refs/tags/(.+)$") {
+            $version = $Matches[1]
+          } else {
+            $version = "dev-" + $env:GITHUB_SHA.Substring(0, 7)
+          }
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
+          $root = "DashX360 $version"
+
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Copy-Item XboxMetroLauncher.exe                $root/
+          Copy-Item XboxMetroLauncher.dll                $root/
+          Copy-Item XboxMetroLauncher.deps.json          $root/
+          Copy-Item XboxMetroLauncher.runtimeconfig.json $root/
+          Copy-Item SharpDX.dll                          $root/
+          Copy-Item SharpDX.DirectInput.dll              $root/
+          Copy-Item README.md                            $root/
+
+          Copy-Item -Recurse Assets   $root/Assets
+
+          New-Item -ItemType Directory -Force -Path "$root/Logs" | Out-Null
+
+          New-Item -ItemType Directory -Force -Path "$root/UserData/Backups"        | Out-Null
+          New-Item -ItemType Directory -Force -Path "$root/UserData/ImportedAssets" | Out-Null
+          Copy-Item UserData/friends.json         "$root/UserData/"
+          Copy-Item UserData/discord-friends.json "$root/UserData/"
+          Copy-Item UserData/library.json         "$root/UserData/"
+          Copy-Item UserData/profile.json         "$root/UserData/"
+          Copy-Item UserData/settings.json        "$root/UserData/"
+
+          echo "FOLDER_NAME=$root" >> $env:GITHUB_ENV
+
+      - name: Install WinRAR
+        shell: pwsh
+        run: choco install winrar -y --no-progress
+
+      - name: Pack RAR
+        shell: pwsh
+        run: |
+          $rar     = "C:\Program Files\WinRAR\Rar.exe"
+          $rarName = "DashX360_$($env:VERSION).rar"
+
+          & $rar a -r -ep1 -m3 "$rarName" "$($env:FOLDER_NAME)\*" | Out-Null
+
+          echo "RAR_NAME=$rarName" >> $env:GITHUB_ENV
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DashX360-${{ env.VERSION }}
+          path: ${{ env.RAR_NAME }}
+          retention-days: 14
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DashX360 ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          body: |
+            ## DashX360 ${{ env.VERSION }}
+
+            Fan-made Windows recreation of the Xbox 360 Metro dashboard.
+
+            ### Requirements
+            - Windows 10 or Windows 11
+            - [.NET 8 Desktop Runtime x64](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+
+            ### Install
+            1. Download and extract `${{ env.RAR_NAME }}`
+            2. Run `XboxMetroLauncher.exe`
+
+            > **Steam users:** Untick *Enable Guide Button Chords for controllers* in Steam Big Picture settings if using a controller.
+          files: ${{ env.RAR_NAME }}
+          draft: false
+          prerelease: false
