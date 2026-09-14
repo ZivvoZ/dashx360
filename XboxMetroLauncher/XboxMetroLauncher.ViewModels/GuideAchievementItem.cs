@@ -6,6 +6,8 @@ public sealed class GuideAchievementItem : ObservableObject
 
 	public required string Title { get; init; }
 
+	public string ApiName { get; init; } = string.Empty;
+
 	public string Description { get; init; } = string.Empty;
 
 	public bool Achieved { get; init; }
@@ -13,6 +15,10 @@ public sealed class GuideAchievementItem : ObservableObject
 	public string StatusText { get; init; } = string.Empty;
 
 	public long UnlockTimeUnix { get; init; }
+
+	public string IconPath { get; init; } = string.Empty;
+
+	public bool HasIconPath => !string.IsNullOrWhiteSpace(IconPath);
 
 	public string IconGlyph
 	{

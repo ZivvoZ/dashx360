@@ -101,6 +101,12 @@ public sealed class SteamCommunityService : ISteamCommunityService
 		[JsonPropertyName("description")]
 		public string? Description { get; set; }
 
+		[JsonPropertyName("icon")]
+		public string? Icon { get; set; }
+
+		[JsonPropertyName("icongray")]
+		public string? IconGray { get; set; }
+
 		[JsonPropertyName("achieved")]
 		public int Achieved { get; set; }
 
@@ -136,6 +142,12 @@ public sealed class SteamCommunityService : ISteamCommunityService
 
 		[JsonPropertyName("description")]
 		public string? Description { get; set; }
+
+		[JsonPropertyName("icon")]
+		public string? Icon { get; set; }
+
+		[JsonPropertyName("icongray")]
+		public string? IconGray { get; set; }
 	}
 
 	private sealed class SteamOwnedGamesResponse
@@ -172,6 +184,9 @@ public sealed class SteamCommunityService : ISteamCommunityService
 	{
 		[JsonPropertyName("name")]
 		public string Name { get; set; } = string.Empty;
+
+		[JsonPropertyName("short_description")]
+		public string ShortDescription { get; set; } = string.Empty;
 
 		[JsonPropertyName("genres")]
 		public List<SteamStoreDescriptionItem>? Genres { get; set; }
@@ -403,7 +418,7 @@ public sealed class SteamCommunityService : ISteamCommunityService
 		}
 		string cachePath = Path.Combine(_cacheFolder, "Achievements", safeAppId + ".json");
 		List<SteamAchievementItem> list = await ReadFreshCacheAsync<List<SteamAchievementItem>>(cachePath, AchievementsCacheAge, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-		if (list != null)
+		if (list != null && ShouldUseCachedAchievements(list))
 		{
 			return list;
 		}
@@ -419,11 +434,29 @@ public sealed class SteamCommunityService : ISteamCommunityService
 					ApiName = (item.ApiName ?? string.Empty),
 					Name = (string.IsNullOrWhiteSpace(item.Name) ? (item.ApiName ?? "Achievement") : item.Name),
 					Description = (item.Description ?? string.Empty),
+					IconUrl = (item.Icon ?? string.Empty),
+					IconGrayUrl = (item.IconGray ?? string.Empty),
 					Achieved = (item.Achieved > 0),
 					UnlockTimeUnix = item.UnlockTime
 				})
 				orderby item.Achieved
 				select item).ThenBy<SteamAchievementItem, string>((SteamAchievementItem item) => item.Name, StringComparer.CurrentCultureIgnoreCase).ToList() ?? new List<SteamAchievementItem>();
+			// Unlock status and artwork are returned by separate Steam endpoints.
+			try
+			{
+				var schema = await GetJsonAsync<SteamAchievementSchemaResponse>($"https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key={Uri.EscapeDataString(config.SteamApiKey)}&appid={Uri.EscapeDataString(safeAppId)}&l=en", cancellationToken).ConfigureAwait(false);
+				foreach (var achievement in achievements)
+				{
+					var metadata = schema?.Game?.AvailableGameStats?.Achievements?.FirstOrDefault(item => item.Name == achievement.ApiName);
+					var cached = list?.FirstOrDefault(item => item.ApiName == achievement.ApiName);
+					achievement.IconUrl = metadata?.Icon ?? cached?.IconUrl ?? achievement.IconUrl;
+					achievement.IconGrayUrl = metadata?.IconGray ?? cached?.IconGrayUrl ?? achievement.IconGrayUrl;
+					if (!string.IsNullOrWhiteSpace(metadata?.DisplayName)) achievement.Name = metadata.DisplayName;
+					if (!string.IsNullOrWhiteSpace(metadata?.Description)) achievement.Description = metadata.Description;
+				}
+			}
+			catch (OperationCanceledException) { throw; }
+			catch (Exception) { /* Keep genuine unlock status when artwork is unavailable. */ }
 			await WriteCacheAsync(cachePath, achievements, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 			return achievements;
 		}
@@ -431,6 +464,11 @@ public sealed class SteamCommunityService : ISteamCommunityService
 		{
 			return await LoadAchievementSchemaFallbackAsync(config, safeAppId, cachePath, "Steam unlock status unavailable: " + FriendlySteamError(ex), cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 		}
+	}
+
+	private static bool ShouldUseCachedAchievements(IReadOnlyCollection<SteamAchievementItem> achievements)
+	{
+		return !achievements.Any(achievement => achievement.Achieved && string.IsNullOrWhiteSpace(achievement.IconUrl) && string.IsNullOrWhiteSpace(achievement.IconGrayUrl));
 	}
 
 	public async Task<SteamGameDetails> LoadGameDetailsAsync(string appId, CancellationToken cancellationToken = default(CancellationToken))
@@ -449,6 +487,7 @@ public sealed class SteamCommunityService : ISteamCommunityService
 			Rating = steamGameDetails.Rating,
 			MultiplayerInfo = steamGameDetails.MultiplayerInfo,
 			CoOpInfo = steamGameDetails.CoOpInfo,
+			StoreDescription = steamGameDetails.StoreDescription,
 			StoreScreenshotPath = steamGameDetails.StoreScreenshotPath,
 			ReviewStarRating = steamGameDetails.ReviewStarRating,
 			ReviewCount = steamGameDetails.ReviewCount,
@@ -530,7 +569,7 @@ public sealed class SteamCommunityService : ISteamCommunityService
 	{
 		string cachePath = Path.Combine(_cacheFolder, "StoreDetails", safeAppId + ".json");
 		SteamStoreAppDetails cached = await ReadFreshCacheAsync<SteamStoreAppDetails>(cachePath, GameDetailsCacheAge, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-		if (cached != null && cached.Dlc == null)
+		if (cached != null && (cached.Dlc == null || string.IsNullOrWhiteSpace(cached.ShortDescription)))
 		{
 			cached = null;
 		}
@@ -538,7 +577,7 @@ public sealed class SteamCommunityService : ISteamCommunityService
 		{
 			try
 			{
-				Dictionary<string, SteamStoreEnvelope> dictionary = await GetJsonAsync<Dictionary<string, SteamStoreEnvelope>>("https://store.steampowered.com/api/appdetails?appids=" + Uri.EscapeDataString(safeAppId) + "&filters=basic,genres,categories,ratings,screenshots,dlc", cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+				Dictionary<string, SteamStoreEnvelope> dictionary = await GetJsonAsync<Dictionary<string, SteamStoreEnvelope>>("https://store.steampowered.com/api/appdetails?appids=" + Uri.EscapeDataString(safeAppId) + "&filters=basic,genres,categories,ratings,screenshots,dlc,short_description", cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 				cached = ((dictionary != null && dictionary.TryGetValue(safeAppId, out var value) && value.Success) ? value.Data : null);
 				if (cached != null)
 				{
@@ -568,6 +607,7 @@ public sealed class SteamCommunityService : ISteamCommunityService
 		steamGameDetails.Rating = BuildRatingLabel(cached.Ratings);
 		steamGameDetails.MultiplayerInfo = BuildCategoryLine(categories, "Multiplayer", new string[4] { "Multi-player", "MMO", "PvP", "Online PvP" });
 		steamGameDetails.CoOpInfo = BuildCategoryLine(categories, "Co-op", new string[4] { "Co-op", "Online Co-op", "Shared/Split Screen Co-op", "LAN Co-op" });
+		steamGameDetails.StoreDescription = CleanSteamHtmlText(cached.ShortDescription);
 		steamGameDetails.StoreScreenshotPath = screenshotPath;
 		steamGameDetails.ReviewStarRating = reviewSummary.Stars;
 		steamGameDetails.ReviewCount = reviewSummary.Count;
@@ -829,6 +869,8 @@ public sealed class SteamCommunityService : ISteamCommunityService
 					ApiName = (item.Name ?? string.Empty),
 					Name = (string.IsNullOrWhiteSpace(item.DisplayName) ? (item.Name ?? "Achievement") : item.DisplayName),
 					Description = (item.Description ?? string.Empty),
+					IconUrl = (item.Icon ?? string.Empty),
+					IconGrayUrl = (item.IconGray ?? string.Empty),
 					Achieved = false
 				})
 				where !string.IsNullOrWhiteSpace(item.Name)

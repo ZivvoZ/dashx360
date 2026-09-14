@@ -1,6 +1,85 @@
-<Window x:Class="XboxMetroLauncher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration" xmlns:controls="clr-namespace:XboxMetroLauncher.Controls" Title="DashX360" Width="1280" Height="720" MinWidth="1024" MinHeight="576" Background="{StaticResource DashboardBackgroundBrush}" WindowStartupLocation="CenterScreen" xmlns:xboxmetrolauncher="clr-namespace:XboxMetroLauncher" PreviewKeyDown="Window_OnPreviewKeyDown" PreviewMouseDown="Window_OnPreviewMouseDown" PreviewMouseMove="Window_OnPreviewMouseMove" Loaded="Window_OnLoaded" Closing="Window_OnClosing">
+﻿<Window x:Class="XboxMetroLauncher.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration" xmlns:controls="clr-namespace:XboxMetroLauncher.Controls" Title="DashX360" Width="1280" Height="720" MinWidth="1024" MinHeight="576" Background="{StaticResource DashboardBackgroundBrush}" WindowStartupLocation="CenterScreen" xmlns:xboxmetrolauncher="clr-namespace:XboxMetroLauncher" PreviewKeyDown="Window_OnPreviewKeyDown" PreviewMouseDown="Window_OnPreviewMouseDown" PreviewMouseMove="Window_OnPreviewMouseMove" Loaded="Window_OnLoaded" Closing="Window_OnClosing">
   <FrameworkElement.Resources>
     <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="XboxMetroLauncher.Themes/DashX360_CenterBladeBodies.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <DropShadowEffect x:Key="BladeTitleShadowEffect" BlurRadius="3" ShadowDepth="1" Direction="315" Opacity="0.45" Color="#FF242424" />
+      <DropShadowEffect x:Key="BladeFooterShadowEffect" BlurRadius="3" ShadowDepth="1" Direction="315" Opacity="0.42" Color="#FF242424" />
+      <LinearGradientBrush x:Key="BladeSelectedRowBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+        <GradientStop Color="#FAFFFFFF" Offset="0" />
+        <GradientStop Color="#EEF5F0EA" Offset="0.44" />
+        <GradientStop Color="#DDE7E4DB" Offset="1" />
+      </LinearGradientBrush>
+      <Style x:Key="BladeTextBaseStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontStretch" Value="Normal" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+      </Style>
+      <Style x:Key="BladeSectionTitleStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontStretch" Value="Normal" />
+        <Setter Property="Foreground" Value="#F4FFFFFF" />
+        <Setter Property="Effect" Value="{StaticResource BladeTitleShadowEffect}" />
+      </Style>
+      <Style x:Key="BladeMenuTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="21" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#FF171717" />
+      </Style>
+      <Style x:Key="BladeSelectedMenuTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeMenuTextStyle}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+      </Style>
+      <Style x:Key="BladeDetailTitleStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="25" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="#FF171717" />
+      </Style>
+      <Style x:Key="BladeBodyTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="19" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#FF171717" />
+            <Setter Property="LineHeight" Value="27" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+      <Style x:Key="BladeProfileGamertagStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+        <Setter Property="FontSize" Value="27" />
+        <Setter Property="FontFamily" Value="Segoe UI, Xbox 360, Convection" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="#FF111111" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+      </Style>
+      <Style x:Key="BladeProfileTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontFamily" Value="Segoe UI, Xbox 360, Convection" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="#FF101010" />
+        <Setter Property="LineHeight" Value="28" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+      </Style>
+      <Style x:Key="BladeOpenTrayTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#FF111111" />
+      </Style>
+      <Style x:Key="BladeFooterTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeTextBaseStyle}">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+            <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontStretch" Value="Normal" />
+        <Setter Property="Foreground" Value="#FFFFFFFF" />
+        <Setter Property="Effect" Value="{StaticResource BladeFooterShadowEffect}" />
+      </Style>
       <Style x:Key="SettingsFocusVisual">
         <Setter Property="Control.Template">
           <Setter.Value>
@@ -65,6 +144,115 @@
           </Setter.Value>
         </Setter>
       </Style>
+      <Style x:Key="BladesMenuButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderBrush" Value="#6A315C2E" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Foreground" Value="#FF1B1B1B" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="21" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontStretch" Value="Condensed" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" ClipToBounds="True">
+                <Grid>
+                  <Rectangle x:Name="SelectedSheen" Opacity="0">
+                    <Shape.Fill>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#ECFFFFFF" Offset="0" />
+                        <GradientStop Color="#BFEAF4E2" Offset="0.42" />
+                        <GradientStop Color="#62C8D7C0" Offset="1" />
+                      </LinearGradientBrush>
+                    </Shape.Fill>
+                  </Rectangle>
+                  <Rectangle x:Name="SelectedTopLine" Height="1" Fill="#DFFFFFFF" VerticalAlignment="Top" Opacity="0" />
+                  <Rectangle x:Name="SelectedBottomShadow" Height="2" Fill="#44262F24" VerticalAlignment="Bottom" Opacity="0" />
+                  <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="{StaticResource BladeSelectedRowBrush}" />
+                  <Setter TargetName="Root" Property="BorderBrush" Value="#6E7D857B" />
+                  <Setter TargetName="SelectedSheen" Property="Opacity" Value="1" />
+                  <Setter TargetName="SelectedTopLine" Property="Opacity" Value="1" />
+                  <Setter TargetName="SelectedBottomShadow" Property="Opacity" Value="1" />
+                  <Setter Property="Foreground" Value="#FF111111" />
+                  <Setter Property="FontWeight" Value="SemiBold" />
+                </DataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="#DDF4FAF1" />
+                  <Setter TargetName="Root" Property="BorderBrush" Value="#8A2F682D" />
+                  <Setter Property="Foreground" Value="#FF111111" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="#DDF4FAF1" />
+                  <Setter TargetName="Root" Property="BorderBrush" Value="#8A2F682D" />
+                  <Setter Property="Foreground" Value="#FF111111" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.ActiveBladesAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                  <Setter Property="Foreground" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style x:Key="BladesShelfButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Height" Value="72" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Background" Value="#72D7F0C7" />
+        <Setter Property="BorderBrush" Value="#77315C2E" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Foreground" Value="#FF111111" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                <Border.Effect>
+                  <DropShadowEffect BlurRadius="5" ShadowDepth="2" Direction="270" Opacity="0.3" Color="#FF1E3B1D" />
+                </Border.Effect>
+                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="#EAF4F7F0" />
+                  <Setter TargetName="Root" Property="BorderBrush" Value="#88315C2E" />
+                </DataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="#EAF4F7F0" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                  <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.ActiveBladesAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <Grid Background="{StaticResource DashboardBackgroundBrush}">
@@ -122,6 +310,51 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="72" />
           </Grid.RowDefinitions>
+          <Grid Grid.RowSpan="3" IsHitTestVisible="False">
+            <Grid.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Grid.Style>
+            <Rectangle>
+              <Shape.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                  <GradientStop Color="#FF1D596B" Offset="0" />
+                  <GradientStop Color="#FF0F79AE" Offset="0.34" />
+                  <GradientStop Color="#FF153850" Offset="0.62" />
+                  <GradientStop Color="#FF101820" Offset="1" />
+                </LinearGradientBrush>
+              </Shape.Fill>
+            </Rectangle>
+            <Rectangle Opacity="0.46">
+              <Shape.Fill>
+                <RadialGradientBrush Center="0.46,0.18" RadiusX="0.7" RadiusY="0.52">
+                  <GradientStop Color="#AAFFFFFF" Offset="0" />
+                  <GradientStop Color="#3CFFFFFF" Offset="0.38" />
+                  <GradientStop Color="#00FFFFFF" Offset="1" />
+                </RadialGradientBrush>
+              </Shape.Fill>
+            </Rectangle>
+            <Canvas>
+              <Border Canvas.Left="-56" Canvas.Top="150" Width="154" Height="424" Background="#74EAF2F5" BorderBrush="#99FFFFFF" BorderThickness="1">
+                <Border.Effect>
+                  <DropShadowEffect BlurRadius="24" ShadowDepth="3" Direction="0" Color="#FF000000" Opacity="0.2" />
+                </Border.Effect>
+              </Border>
+              <Border Canvas.Left="1182" Canvas.Top="150" Width="154" Height="424" Background="#74EAF2F5" BorderBrush="#99FFFFFF" BorderThickness="1">
+                <Border.Effect>
+                  <DropShadowEffect BlurRadius="24" ShadowDepth="3" Direction="180" Color="#FF000000" Opacity="0.2" />
+                </Border.Effect>
+              </Border>
+              <Rectangle Canvas.Left="100" Canvas.Top="128" Width="1080" Height="470" Fill="#32FFFFFF" />
+              <Rectangle Canvas.Left="100" Canvas.Top="128" Width="1080" Height="470" Stroke="#82FFFFFF" StrokeThickness="1" />
+            </Canvas>
+          </Grid>
           <Grid Row="0">
             <Canvas Margin="0,112,0,0" Height="46" HorizontalAlignment="Stretch" VerticalAlignment="Top" IsHitTestVisible="False" Opacity="0.12" Visibility="Collapsed">
               <TextBlock Canvas.Left="180" Width="58" Height="40" Text="bing" Style="{StaticResource TabGhostTextStyle}" />
@@ -134,6 +367,18 @@
               <TextBlock Canvas.Left="994" Width="128" Height="40" Text="settings" Style="{StaticResource TabGhostTextStyle}" />
             </Canvas>
             <Canvas Margin="0,112,0,0" Height="46" HorizontalAlignment="Stretch" VerticalAlignment="Top" Visibility="{Binding IsMyGamesOpen, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+              <Canvas.Style>
+                <Style TargetType="{x:Type Canvas}">
+                  <Setter Property="Opacity" Value="1" />
+                  <Setter Property="IsHitTestVisible" Value="True" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                      <Setter Property="Opacity" Value="0" />
+                      <Setter Property="IsHitTestVisible" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Canvas.Style>
               <Button Canvas.Left="180" Canvas.Top="0" Width="58" Height="40" Content="bing" Style="{StaticResource TabButtonStyle}" DataContext="{Binding Tabs[0]}" Command="{Binding DataContext.SwitchTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
               <Button Canvas.Left="274" Canvas.Top="0" Width="78" Height="40" Content="home" Style="{StaticResource TabButtonStyle}" DataContext="{Binding Tabs[1]}" Command="{Binding DataContext.SwitchTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
               <Button Canvas.Left="388" Canvas.Top="0" Width="86" Height="40" Content="social" Style="{StaticResource TabButtonStyle}" DataContext="{Binding Tabs[2]}" Command="{Binding DataContext.SwitchTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
@@ -144,6 +389,16 @@
               <Button Canvas.Left="994" Canvas.Top="0" Width="128" Height="40" Content="settings" Style="{StaticResource TabButtonStyle}" DataContext="{Binding Tabs[7]}" Command="{Binding DataContext.SwitchTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
             </Canvas>
             <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,42,96,0" Width="360" Height="38" Opacity="0.88" IsHitTestVisible="False">
+              <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                  <Setter Property="Visibility" Value="Visible" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Grid.Style>
               <Grid Name="TopRightPlainState" HorizontalAlignment="Right" Opacity="1">
                 <Grid.Style>
                   <Style TargetType="{x:Type Grid}">
@@ -210,7 +465,1340 @@
               </Border>
             </Grid>
           </Grid>
+          <Grid Name="BladesDashboardOverlay" Grid.RowSpan="3" Panel.ZIndex="40" Focusable="False" RenderTransformOrigin="0.5,0.5">
+            <UIElement.RenderTransform>
+              <TransformGroup>
+                <ScaleTransform x:Name="BladesStartupScale" ScaleX="1" ScaleY="1" />
+                <TranslateTransform x:Name="BladesStartupTranslate" Y="0" />
+              </TransformGroup>
+            </UIElement.RenderTransform>
+            <Grid.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Grid.Style>
+            <Viewbox Width="1280" Height="720" Stretch="Uniform">
+              <Canvas Width="1920" Height="1080" ClipToBounds="False">
+                <Canvas.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFD7DADB" Offset="0" />
+                    <GradientStop Color="#FFF4F4F2" Offset="0.18" />
+                    <GradientStop Color="#FFD6DADB" Offset="1" />
+                  </LinearGradientBrush>
+                </Canvas.Background>
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Fill="{Binding ActiveBladesAccentBrush}" Panel.ZIndex="0" />
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Opacity="0.12" Panel.ZIndex="1">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.46,0.18" RadiusX="0.84" RadiusY="0.7">
+                      <GradientStop Color="#88FFFFFF" Offset="0" />
+                      <GradientStop Color="#00FFFFFF" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <controls:BladeCenterHost x:Name="BladesCenterHost" Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" FocusedBladeKey="{Binding ActiveBladesBlade.Key}" Panel.ZIndex="2" />
+                <Rectangle x:Name="BladesStartupGreenReveal" Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Visibility="Collapsed" Opacity="0" IsHitTestVisible="False" Panel.ZIndex="3">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.5,0.48" RadiusX="0.62" RadiusY="0.78">
+                      <GradientStop Color="#FFBFECC2" Offset="0" />
+                      <GradientStop Color="#FF77CF58" Offset="0.45" />
+                      <GradientStop Color="#FF3AAD2C" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <controls:BladesArtworkHost x:Name="BladesArtworkHost" Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" FocusedBladeKey="{Binding ActiveBladesBlade.Key}" Panel.ZIndex="7">
+                  <controls:BladesArtworkHost.Style>
+                    <Style TargetType="{x:Type controls:BladesArtworkHost}">
+                      <Setter Property="Visibility" Value="Visible" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBladesSubmenuOpen}" Value="True">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </controls:BladesArtworkHost.Style>
+                </controls:BladesArtworkHost>
+                <Grid x:Name="BladesBootRunnerOverlay" Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Visibility="Collapsed" Opacity="0" IsHitTestVisible="False" Panel.ZIndex="12">
+                  <Image x:Name="BladesBootLeftRunnerOpenImage" Width="1920" Height="1080" Stretch="Fill" Opacity="0" Source="{Binding Source=Assets/Blades/Startup/left-runner-open.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=1920}" />
+                  <Image x:Name="BladesBootRightRunnerOpenImage" Width="1920" Height="1080" Stretch="Fill" Opacity="0" Source="{Binding Source=Assets/Blades/Startup/right-runner-open.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=1920}" />
+                  <Image x:Name="BladesBootLeftRunnerImage" Width="1920" Height="1080" Stretch="Fill" Source="{Binding Source=Assets/Blades/Startup/anim-left-runner.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=1920}">
+                    <Image.RenderTransform>
+                      <TranslateTransform x:Name="BladesBootLeftRunnerTranslate" />
+                    </Image.RenderTransform>
+                  </Image>
+                  <Image x:Name="BladesBootRightRunnerImage" Width="1920" Height="1080" Stretch="Fill" Source="{Binding Source=Assets/Blades/Startup/anim-right-runner.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=1920}">
+                    <Image.RenderTransform>
+                      <TranslateTransform x:Name="BladesBootRightRunnerTranslate" />
+                    </Image.RenderTransform>
+                  </Image>
+                </Grid>
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Fill="{Binding ActiveBladesAccentBrush}" Panel.ZIndex="5">
+                  <Rectangle.Style>
+                    <Style TargetType="{x:Type Rectangle}">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBladesSubmenuOpen}" Value="True">
+                          <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Rectangle.Style>
+                </Rectangle>
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="1920" Height="1080" Opacity="0.16" Panel.ZIndex="5">
+                  <Rectangle.Style>
+                    <Style TargetType="{x:Type Rectangle}">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBladesSubmenuOpen}" Value="True">
+                          <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Rectangle.Style>
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.52,0.28" RadiusX="0.72" RadiusY="0.78">
+                      <GradientStop Color="#EEFFFFFF" Offset="0" />
+                      <GradientStop Color="#00FFFFFF" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <controls:BladeAmbientTexture Width="1920" Height="1080" Tint="{Binding ActiveBladesAccentBrush.Color}" Panel.ZIndex="5" Visibility="{Binding IsBladesSubmenuOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Canvas x:Name="BladesContentCanvas" Width="1280" Height="720" Panel.ZIndex="6">
+                  <Canvas.Style>
+                    <Style TargetType="{x:Type Canvas}">
+                      <Setter Property="Canvas.Left" Value="20" />
+                      <Setter Property="Clip">
+                        <Setter.Value>
+                          <RectangleGeometry Rect="180,0,820,720" />
+                        </Setter.Value>
+                      </Setter>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                          <Setter Property="Canvas.Left" Value="-50" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="188,40,872,680" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                          <Setter Property="Canvas.Left" Value="20" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="180,48,840,672" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                          <Setter Property="Canvas.Left" Value="70" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="205,48,825,672" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                          <Setter Property="Canvas.Left" Value="112" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="196,48,838,672" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                          <Setter Property="Canvas.Left" Value="215" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="200,48,735,672" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsBladesSubmenuOpen}" Value="True">
+                          <Setter Property="Canvas.Left" Value="0" />
+                          <Setter Property="Clip">
+                            <Setter.Value>
+                              <RectangleGeometry Rect="0,0,1280,720" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Canvas.Style>
+                  <Canvas.RenderTransform>
+                    <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+                  </Canvas.RenderTransform>
+                  <Grid Canvas.Left="0" Canvas.Top="0" Width="1280" Height="720">
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsBladesSubmenuOpen}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+                <Canvas>
+                  <Border Canvas.Left="216" Canvas.Top="50" Width="420" Height="42" Background="#00FFFFFF">
+                    <TextBlock Text="{Binding ActiveBladesTitle}" Style="{StaticResource BladeSectionTitleStyle}" />
+                  </Border>
+                  <Border Canvas.Left="206" Canvas.Top="98" Width="386" Height="140" Background="#C4EFE6D6" BorderBrush="#8A405D3B" BorderThickness="1.2" CornerRadius="8" ClipToBounds="True">
+                    <Border.Style>
+                      <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesProfileVisible}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                    <Grid Margin="0">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="*" />
+                      </Grid.RowDefinitions>
+                      <Rectangle Grid.Row="1" Opacity="0.20" IsHitTestVisible="False">
+                        <Shape.Fill>
+                          <RadialGradientBrush Center="0.58,0.48" RadiusX="0.62" RadiusY="0.72">
+                            <GradientStop Color="#7DFFFFFF" Offset="0" />
+                            <GradientStop Color="#1BFFFFFF" Offset="0.55" />
+                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                          </RadialGradientBrush>
+                        </Shape.Fill>
+                      </Rectangle>
+                      <Rectangle Grid.Row="1" Height="1" VerticalAlignment="Top" Opacity="0.26" IsHitTestVisible="False">
+                        <Shape.Fill>
+                          <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00FFFFFF" Offset="0" />
+                            <GradientStop Color="#FFFFFFFF" Offset="0.48" />
+                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                          </LinearGradientBrush>
+                        </Shape.Fill>
+                      </Rectangle>
+                      <Border Background="#66F5CC52" Grid.Row="0">
+                        <TextBlock Text="{Binding Profile.Gamertag}" Style="{StaticResource BladeProfileGamertagStyle}" Margin="12,0,30,0" TextTrimming="CharacterEllipsis" />
+                      </Border>
+                      <Image Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="20" Height="27" Margin="0,0,12,0" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIconsFit/xbox live/Friends.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" />
+                      <Grid Grid.Row="1" Margin="14,8,10,0">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="84" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Width="78" Height="78" BorderBrush="#7D5F6A62" BorderThickness="2" Background="#33FFFFFF" HorizontalAlignment="Left">
+                          <Image Stretch="UniformToFill" Source="{Binding Profile.GamerPicturePath, Converter={StaticResource StringToImageSourceConverter}}" />
+                        </Border>
+                        <Grid Grid.Column="1">
+                          <Grid.RowDefinitions>
+                            <RowDefinition Height="27" />
+                            <RowDefinition Height="27" />
+                            <RowDefinition Height="27" />
+                          </Grid.RowDefinitions>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                          </Grid.ColumnDefinitions>
+                          <TextBlock Text="Rep" Style="{StaticResource BladeProfileTextStyle}" Margin="0,-1,0,0" />
+                          <StackPanel HorizontalAlignment="Right" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,-1,0,0">
+                            <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                            <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                            <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                            <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                            <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                          </StackPanel>
+                          <StackPanel Grid.Row="1" Orientation="Horizontal"><Image Width="24" Height="24" Source="{Binding Source=Assets/Blades/ProvidedIcons/profile/GScore.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" /><TextBlock Text="amerscore" Style="{StaticResource BladeProfileTextStyle}" /></StackPanel>
+                          <StackPanel HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="1,0,0,0">
+                            <TextBlock Text="{Binding Profile.Gamerscore}" Style="{StaticResource BladeProfileTextStyle}" Margin="0,0,5,0" />
+                          </StackPanel>
+                          <TextBlock Grid.Row="2" Text="Zone" Style="{StaticResource BladeProfileTextStyle}" />
+                          <TextBlock HorizontalAlignment="Right" Grid.Row="2" Grid.Column="1" Text="Recreation" Style="{StaticResource BladeProfileTextStyle}" Margin="1,0,0,0" />
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Border>
+                  <Canvas Width="330" Height="132">
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Canvas.Left" Value="637" />
+                        <Setter Property="Canvas.Top" Value="104" />
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Canvas.Left" Value="637" />
+                            <Setter Property="Canvas.Top" Value="105" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Image Width="330" Height="132" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Misc/xbox-360-1.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=420}" />
+                  </Canvas>
+                  <Canvas Canvas.Left="724" Canvas.Top="130" Width="230" Height="106">
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Ellipse Canvas.Left="24" Canvas.Top="6" Width="58" Height="58" Stroke="#777A8A74" StrokeThickness="1.4">
+                      <Ellipse.Fill>
+                        <RadialGradientBrush Center="0.35,0.25" RadiusX="0.7" RadiusY="0.7">
+                          <GradientStop Color="#DCF1F3EF" Offset="0" />
+                          <GradientStop Color="#A7AEB3AD" Offset="0.72" />
+                          <GradientStop Color="#6A4E5D4B" Offset="1" />
+                        </RadialGradientBrush>
+                      </Ellipse.Fill>
+                    </Ellipse>
+                    <Path Canvas.Left="39" Canvas.Top="18" Width="32" Height="33" Stretch="Fill" Fill="#A857A539"
+                          Data="M 0,2 C 9,9 13,14 16,22 C 20,14 24,8 32,0 C 25,15 24,22 32,33 C 23,28 18,24 16,19 C 13,24 8,29 0,33 C 8,22 8,15 0,2 Z" />
+                    <TextBlock Canvas.Left="92" Canvas.Top="24" Text="XBOX 360" Foreground="#96416A34" FontSize="32" FontWeight="Normal" FontStretch="Condensed">
+                      <TextBlock.Effect>
+                        <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.18" Color="#FFFFFFFF" />
+                      </TextBlock.Effect>
+                    </TextBlock>
+                  </Canvas>
+                  <Canvas Canvas.Left="704" Canvas.Top="142" Width="190" Height="102">
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Image Width="190" Height="102" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/livelogo.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" />
+                  </Canvas>
+                  <Rectangle Canvas.Left="620" Canvas.Top="256" Width="364" Height="2" Fill="#32345E30">
+                    <Rectangle.Style>
+                      <Style TargetType="{x:Type Rectangle}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Rectangle.Style>
+                  </Rectangle>
+                  <TextBlock Canvas.Left="624" Canvas.Top="276" Width="370" Text="{Binding ActiveBladesSelectedItem.DetailTitle}">
+                    <TextBlock.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeDetailTitleStyle}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <TextBlock Canvas.Left="624" Canvas.Top="324" Width="386" Text="{Binding ActiveBladesSelectedItem.DetailDescription}">
+                    <TextBlock.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeBodyTextStyle}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <TextBlock Canvas.Left="624" Canvas.Top="266" Width="370" Text="Xbox LIVE">
+                    <TextBlock.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeDetailTitleStyle}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <TextBlock Canvas.Left="638" Canvas.Top="304" Width="430" Text="Games. Tournaments&#x0a;Entertainment. All the&#x0a;rewards. Endless possibilities.&#x0a;What are you waiting for?">
+                    <TextBlock.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeBodyTextStyle}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="FontSize" Value="24" />
+                        <Setter Property="LineHeight" Value="32" />
+                        <Setter Property="TextWrapping" Value="NoWrap" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <TextBlock Canvas.Left="206" Canvas.Top="118" Width="342" Text="">
+                    <TextBlock.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeBodyTextStyle}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <Canvas>
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Border Canvas.Left="206" Canvas.Top="112" Width="362" Height="464" Background="#00FFFFFF" ClipToBounds="True">
+                      <ItemsControl ItemsSource="{Binding ActiveBladesMenuItems}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" IsHitTestVisible="False" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                              <Button.Style>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BladesMenuButtonStyle}">
+                                  <Setter Property="Height" Value="56" />
+                                  <Setter Property="Background" Value="#00FFFFFF" />
+                                  <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Title}" Value="Spotlight">
+                                      <Setter Property="Height" Value="74" />
+                                      <Setter Property="Background" Value="#6FF2D2AE" />
+                                      <Setter Property="BorderThickness" Value="2" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Title}" Value="New Arrivals">
+                                      <Setter Property="Height" Value="74" />
+                                      <Setter Property="Background" Value="#6FF2D2AE" />
+                                      <Setter Property="BorderThickness" Value="2" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Title}" Value="Game Store">
+                                      <Setter Property="Height" Value="74" />
+                                      <Setter Property="Background" Value="#6FF2D2AE" />
+                                      <Setter Property="BorderThickness" Value="2" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Title}" Value="Video Store">
+                                      <Setter Property="Height" Value="74" />
+                                      <Setter Property="Background" Value="#6FF2D2AE" />
+                                      <Setter Property="BorderThickness" Value="2" />
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </Button.Style>
+                              <Grid Margin="10,0,8,0">
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="58" />
+                                  <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid VerticalAlignment="Center">
+                                  <Grid.Style>
+                                    <Style TargetType="{x:Type Grid}">
+                                      <Setter Property="Width" Value="38" />
+                                      <Setter Property="Height" Value="38" />
+                                      <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Title}" Value="Spotlight">
+                                          <Setter Property="Width" Value="48" />
+                                          <Setter Property="Height" Value="48" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Title}" Value="New Arrivals">
+                                          <Setter Property="Width" Value="48" />
+                                          <Setter Property="Height" Value="48" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Title}" Value="Game Store">
+                                          <Setter Property="Width" Value="48" />
+                                          <Setter Property="Height" Value="48" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Title}" Value="Video Store">
+                                          <Setter Property="Width" Value="48" />
+                                          <Setter Property="Height" Value="48" />
+                                        </DataTrigger>
+                                      </Style.Triggers>
+                                    </Style>
+                                  </Grid.Style>
+                                  <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Image.Style>
+                                      <Style TargetType="{x:Type Image}">
+                                        <Setter Property="Width" Value="30" />
+                                        <Setter Property="Height" Value="30" />
+                                        <Style.Triggers>
+                                          <DataTrigger Binding="{Binding Title}" Value="Spotlight">
+                                            <Setter Property="Width" Value="40" />
+                                            <Setter Property="Height" Value="40" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="New Arrivals">
+                                            <Setter Property="Width" Value="40" />
+                                            <Setter Property="Height" Value="40" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="Game Store">
+                                            <Setter Property="Width" Value="40" />
+                                            <Setter Property="Height" Value="40" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="Video Store">
+                                            <Setter Property="Width" Value="40" />
+                                            <Setter Property="Height" Value="40" />
+                                          </DataTrigger>
+                                        </Style.Triggers>
+                                      </Style>
+                                    </Image.Style>
+                                  </Image>
+                                  <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#E8FFFFFF" Visibility="{Binding HasIconPath, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <TextBlock.Style>
+                                      <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="FontSize" Value="28" />
+                                        <Style.Triggers>
+                                          <DataTrigger Binding="{Binding Title}" Value="Spotlight">
+                                            <Setter Property="FontSize" Value="34" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="New Arrivals">
+                                            <Setter Property="FontSize" Value="34" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="Game Store">
+                                            <Setter Property="FontSize" Value="34" />
+                                          </DataTrigger>
+                                          <DataTrigger Binding="{Binding Title}" Value="Video Store">
+                                            <Setter Property="FontSize" Value="34" />
+                                          </DataTrigger>
+                                        </Style.Triggers>
+                                      </Style>
+                                    </TextBlock.Style>
+                                  </TextBlock>
+                                </Grid>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource BladeMenuTextStyle}" FontSize="25" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </Border>
+                    <Border Canvas.Left="580" Canvas.Top="112" Width="372" Height="286" CornerRadius="4" Background="#74F3D2A9" BorderBrush="#A56E553E" BorderThickness="2">
+                      <Grid ClipToBounds="True">
+                        <Rectangle Opacity="0.55">
+                          <Shape.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                              <GradientStop Color="#DDF5E2C9" Offset="0" />
+                              <GradientStop Color="#90E2B283" Offset="0.58" />
+                              <GradientStop Color="#55FFE4B7" Offset="1" />
+                            </LinearGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <Rectangle Opacity="0.35">
+                          <Shape.Fill>
+                            <RadialGradientBrush Center="0.08,0.42" RadiusX="0.52" RadiusY="0.86">
+                              <GradientStop Color="#FFF0E657" Offset="0" />
+                              <GradientStop Color="#00F0E657" Offset="1" />
+                            </RadialGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <controls:BladeRingBackground Width="372" Height="286" ShowGlare="True" Opacity="0.9" />
+                        <Image Width="142" Height="78" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,18" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/livelogo.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" />
+                      </Grid>
+                    </Border>
+                    <Border Canvas.Left="580" Canvas.Top="408" Width="372" Height="96" CornerRadius="5" Background="#CC5F6160" BorderBrush="#8A424342" BorderThickness="2" ClipToBounds="True">
+                      <Grid>
+                        <Rectangle Opacity="0.22">
+                          <Shape.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                              <GradientStop Color="#FFFFFFFF" Offset="0" />
+                              <GradientStop Color="#22FFFFFF" Offset="0.5" />
+                              <GradientStop Color="#33000000" Offset="1" />
+                            </LinearGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <controls:BladeRingBackground Width="372" Height="96" Opacity="0.9" />
+                        <Image Width="168" Height="68" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/livelogo.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" />
+                      </Grid>
+                    </Border>
+                  </Canvas>
+                  <Border Canvas.Left="206" Canvas.Top="266" Width="408" Height="252" Background="#00FFFFFF" ClipToBounds="True">
+                    <Border.Style>
+                      <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesMarketplace}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                    <ItemsControl Name="BladesMenuItemsControl" ItemsSource="{Binding ActiveBladesMenuItems}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Style="{StaticResource BladesMenuButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                            <Grid Margin="10,0,8,0">
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="58" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="58" />
+                              </Grid.ColumnDefinitions>
+                              <Grid Width="38" Height="38" VerticalAlignment="Center">
+                                <Image Width="30" Height="30" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="27" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#F0FFFFFF" Visibility="{Binding HasIconPath, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                  <TextBlock.Effect>
+                                    <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.22" Color="#FF1B1B1B" />
+                                  </TextBlock.Effect>
+                                </TextBlock>
+                              </Grid>
+                              <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource BladeMenuTextStyle}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                              <TextBlock Grid.Column="2" Text="{Binding CountText}" Style="{StaticResource BladeMenuTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                            </Grid>
+                          </Button>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Border>
+                  <Border Canvas.Left="206" Canvas.Top="410" Width="392" Height="92" CornerRadius="8" Background="#D45C5F5F" BorderBrush="#87434644" BorderThickness="2" ClipToBounds="True">
+                    <Border.Style>
+                      <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesGames}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Border.Style>
+                    <Grid>
+                      <Rectangle Opacity="0.22">
+                        <Shape.Fill>
+                          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFFFFFFF" Offset="0" />
+                            <GradientStop Color="#22FFFFFF" Offset="0.5" />
+                            <GradientStop Color="#33000000" Offset="1" />
+                          </LinearGradientBrush>
+                        </Shape.Fill>
+                      </Rectangle>
+                      <controls:BladeRingBackground Width="392" Height="92" Opacity="0.9" />
+                      <Image Width="176" Height="70" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="22,0,0,0" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/livelogo.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" />
+                    </Grid>
+                  </Border>
+                  <Canvas>
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesSystem}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Rectangle Canvas.Left="206" Canvas.Top="108" Width="408" Height="1" Fill="#653E2C58" />
+                    <Rectangle Canvas.Left="206" Canvas.Top="118" Width="408" Height="356" Opacity="0.13">
+                      <Shape.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                          <GradientStop Color="#FFFFFFFF" Offset="0" />
+                          <GradientStop Color="#66FFFFFF" Offset="0.55" />
+                          <GradientStop Color="#00FFFFFF" Offset="1" />
+                        </LinearGradientBrush>
+                      </Shape.Fill>
+                    </Rectangle>
+                    <Border Canvas.Left="206" Canvas.Top="118" Width="408" Height="356" Background="#00FFFFFF" ClipToBounds="True">
+                      <ItemsControl ItemsSource="{Binding ActiveBladesMenuItems}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Style="{StaticResource BladesMenuButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                              <Grid Margin="10,0,8,0">
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="58" />
+                                  <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid Width="38" Height="38" VerticalAlignment="Center">
+                                  <Image Width="30" Height="30" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                  <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#F0FFFFFF" Visibility="{Binding HasIconPath, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <TextBlock.Effect>
+                                      <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.22" Color="#FF1B1B1B" />
+                                    </TextBlock.Effect>
+                                  </TextBlock>
+                                </Grid>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="21" FontWeight="Normal" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </Border>
+                    <Rectangle Canvas.Left="624" Canvas.Top="108" Width="1" Height="486" Fill="#40FFFFFF" />
+                    <Rectangle Canvas.Left="625" Canvas.Top="108" Width="1" Height="486" Fill="#302B2140" />
+                    <TextBlock Canvas.Left="650" Canvas.Top="126" Width="330" Text="{Binding ActiveBladesSelectedItem.DetailTitle}" Style="{StaticResource BladeDetailTitleStyle}" />
+                                <TextBlock Canvas.Left="650" Canvas.Top="184" Width="335" Text="Edit your Xbox 360 system settings, including:&#x0a;&#x0a;&#x2022; Display&#x0a;&#x2022; Audio&#x0a;&#x2022; Language&#x0a;&#x2022; Remote control&#x0a;&#x2022; and more">
+                      <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeBodyTextStyle}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActiveBladesSelectedItem.Title}" Value="Console Settings">
+                              <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Canvas.Left="650" Canvas.Top="184" Width="335" Text="{Binding ActiveBladesSelectedItem.DetailDescription}">
+                      <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BladeBodyTextStyle}">
+                          <Setter Property="Visibility" Value="Visible" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActiveBladesSelectedItem.Title}" Value="Console Settings">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </Canvas>
+                  <Canvas>
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Border Canvas.Left="206" Canvas.Top="98" Width="386" Height="140" Background="#C4EFE6D6" BorderBrush="#906B5428" BorderThickness="1.5" CornerRadius="8" ClipToBounds="True">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="36" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Rectangle Grid.Row="1" Opacity="0.20" IsHitTestVisible="False">
+                          <Shape.Fill>
+                            <RadialGradientBrush Center="0.58,0.48" RadiusX="0.62" RadiusY="0.72">
+                              <GradientStop Color="#7DFFFFFF" Offset="0" />
+                              <GradientStop Color="#1BFFFFFF" Offset="0.55" />
+                              <GradientStop Color="#00FFFFFF" Offset="1" />
+                            </RadialGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <Rectangle Grid.Row="1" Height="1" VerticalAlignment="Top" Opacity="0.26" IsHitTestVisible="False">
+                          <Shape.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                              <GradientStop Color="#00FFFFFF" Offset="0" />
+                              <GradientStop Color="#FFFFFFFF" Offset="0.48" />
+                              <GradientStop Color="#00FFFFFF" Offset="1" />
+                            </LinearGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <Border Background="#66F5CC52" Grid.Row="0">
+                          <TextBlock Text="{Binding Profile.Gamertag}" Style="{StaticResource BladeProfileGamertagStyle}" Margin="12,0,30,0" TextTrimming="CharacterEllipsis" />
+                        </Border>
+                        <Image Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="20" Height="27" Margin="0,0,12,0" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIconsFit/xbox live/Friends.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" />
+                        <Grid Grid.Row="1" Margin="14,8,10,0">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="*" />
+                          </Grid.ColumnDefinitions>
+                          <Border Width="78" Height="78" BorderBrush="#7D5F6A62" BorderThickness="2" Background="#33FFFFFF" HorizontalAlignment="Left">
+                            <Image Stretch="UniformToFill" Source="{Binding Profile.GamerPicturePath, Converter={StaticResource StringToImageSourceConverter}}" />
+                          </Border>
+                          <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="27" />
+                              <RowDefinition Height="27" />
+                              <RowDefinition Height="27" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="150" />
+                              <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Rep" Style="{StaticResource BladeProfileTextStyle}" Margin="0,-1,0,0" />
+                            <StackPanel HorizontalAlignment="Right" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,-1,0,0">
+                              <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                              <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                              <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                              <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                              <TextBlock Text="&#x2605;" FontFamily="Segoe UI Symbol" FontSize="25" Foreground="#FFD2BD29" Width="24" VerticalAlignment="Center"><TextBlock.Effect><DropShadowEffect BlurRadius="1" ShadowDepth="1" Opacity="0.8" Color="#FF645727" /></TextBlock.Effect></TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal"><Image Width="24" Height="24" Source="{Binding Source=Assets/Blades/ProvidedIcons/profile/GScore.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" /><TextBlock Text="amerscore" Style="{StaticResource BladeProfileTextStyle}" /></StackPanel>
+                            <StackPanel HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="1,0,0,0">
+                              <TextBlock Text="{Binding Profile.Gamerscore}" Style="{StaticResource BladeProfileTextStyle}" Margin="0,0,5,0" />
+                            </StackPanel>
+                            <TextBlock Grid.Row="2" Text="Zone" Style="{StaticResource BladeProfileTextStyle}" />
+                            <TextBlock HorizontalAlignment="Right" Grid.Row="2" Grid.Column="1" Text="Recreation" Style="{StaticResource BladeProfileTextStyle}" Margin="1,0,0,0" />
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    </Border>
+                    <Border Canvas.Left="206" Canvas.Top="256" Width="408" Height="136" Background="#00FFFFFF" ClipToBounds="True">
+                      <ItemsControl ItemsSource="{Binding ActiveBladesMenuItems}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Style="{StaticResource BladesMenuButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                              <Grid Margin="10,0,8,0">
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="58" />
+                                  <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid Width="38" Height="38" VerticalAlignment="Center">
+                                  <Image Width="30" Height="30" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                  <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#F0FFFFFF" Visibility="{Binding HasIconPath, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <TextBlock.Effect>
+                                      <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.22" Color="#FF1B1B1B" />
+                                    </TextBlock.Effect>
+                                  </TextBlock>
+                                </Grid>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="21" FontWeight="Normal" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </Border>
+                    <Border Canvas.Left="206" Canvas.Top="406" Width="392" Height="96" CornerRadius="8" Background="#D85B5C5F" BorderBrush="#994B4C4D" BorderThickness="2" ClipToBounds="True">
+                      <Grid>
+                        <Rectangle Opacity="0.32">
+                          <Shape.Fill>
+                            <RadialGradientBrush Center="0.08,0.42" RadiusX="0.45" RadiusY="0.7">
+                              <GradientStop Color="#FFF6E45A" Offset="0" />
+                              <GradientStop Color="#00F6E45A" Offset="1" />
+                            </RadialGradientBrush>
+                          </Shape.Fill>
+                        </Rectangle>
+                        <controls:BladeRingBackground Width="392" Height="96" Opacity="0.9" />
+                        <Image Width="188" Height="76" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24,2,0,0" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/livelogo.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" />
+                      </Grid>
+                    </Border>
+                  </Canvas>
+                  <Canvas Canvas.Top="523" Width="808" Height="62" ClipToBounds="False">
+                    <Canvas.Style>
+                      <Style TargetType="{x:Type Canvas}">
+                        <Setter Property="Canvas.Left" Value="216" />
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsActiveBladesMedia}" Value="True">
+                            <Setter Property="Canvas.Left" Value="226" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesXboxLive}" Value="True">
+                            <Setter Property="Canvas.Left" Value="198" />
+                          </DataTrigger>
+                          <DataTrigger Binding="{Binding IsActiveBladesOpenTrayVisible}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Canvas.Style>
+                    <Border Canvas.Top="8" Height="45" CornerRadius="22.5" BorderBrush="#743B5B2B" BorderThickness="2">
+                      <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                          <Setter Property="Canvas.Left" Value="10" />
+                          <Setter Property="Width" Value="788" />
+                        </Style>
+                      </Border.Style>
+                      <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                          <GradientStop Color="#5DFFFFFF" Offset="0" />
+                          <GradientStop Color="#28FFFFFF" Offset="0.5" />
+                          <GradientStop Color="#1E3B5B2B" Offset="1" />
+                        </LinearGradientBrush>
+                      </Border.Background>
+                    </Border>
+                    <Ellipse Canvas.Left="0" Canvas.Top="0" Width="62" Height="62" Stroke="#743B5B2B" StrokeThickness="2">
+                      <Ellipse.Fill>
+                        <RadialGradientBrush Center="0.35,0.28" RadiusX="0.82" RadiusY="0.82">
+                          <GradientStop Color="#9DFFFFFF" Offset="0" />
+                          <GradientStop Color="#4FFFFFFF" Offset="0.5" />
+                          <GradientStop Color="#243B5B2B" Offset="1" />
+                        </RadialGradientBrush>
+                      </Ellipse.Fill>
+                    </Ellipse>
+                    <Path Canvas.Left="22" Canvas.Top="21" Width="14" Height="19" Stretch="Fill" Fill="#743B5B2B" Data="M 14,0 L 14,19 L 0,9.5 Z" />
+                    <Rectangle Canvas.Left="39" Canvas.Top="20" Width="3" Height="20" Fill="#743B5B2B" />
+                    <TextBlock Canvas.Left="82" Canvas.Top="14" Text="{Binding OpenTrayTitle}" Style="{StaticResource BladeOpenTrayTextStyle}" FontSize="21" TextTrimming="CharacterEllipsis" Width="672" />
+                    <Button x:Name="BladesTrayButton" Width="798" Height="62" Click="BladesTrayClick" Background="Transparent" BorderThickness="0" FocusVisualStyle="{x:Null}" ToolTip="{Binding OpenTrayTitle}">
+                      <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="28" BorderThickness="2"><Border.Style><Style TargetType="Border"><Setter Property="BorderBrush" Value="Transparent"/><Style.Triggers><DataTrigger Binding="{Binding IsBladesTraySelected}" Value="True"><Setter Property="BorderBrush" Value="#EEECFFCD"/><Setter Property="Background" Value="#28FFFFFF"/></DataTrigger><DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="BorderBrush" Value="#EEECFFCD"/></DataTrigger></Style.Triggers></Style></Border.Style></Border></ControlTemplate></Button.Template>
+                    </Button>
+                  </Canvas>
+                  <Border Canvas.Left="170" Canvas.Top="612" Width="870" Height="96" CornerRadius="0" Background="#00FFFFFF" BorderThickness="0" ClipToBounds="False">
+                    <Grid>
+                      <Canvas Width="230" Height="60" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="54,0,0,0">
+                        <Border Width="24" Height="24" CornerRadius="12" Canvas.Left="26" Canvas.Top="1">
+                          <Border.Background>
+                            <RadialGradientBrush Center="0.35,0.25" RadiusX="0.72" RadiusY="0.72">
+                              <GradientStop Color="#DDFFFFFF" Offset="0" />
+                              <GradientStop Color="#88B8B8B8" Offset="0.75" />
+                              <GradientStop Color="#66909090" Offset="1" />
+                            </RadialGradientBrush>
+                          </Border.Background>
+                          <TextBlock Text="Y" Foreground="#99555555" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Grid Width="28" Height="28" Canvas.Left="9" Canvas.Top="27">
+                          <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/X-Button.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" />
+                          <TextBlock Text="X" Foreground="#F2FFFFFF" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Text="Sign Out" Style="{StaticResource BladeFooterTextStyle}" FontSize="20" Canvas.Left="50" Canvas.Top="26" />
+                      </Canvas>
+                      <Canvas Width="230" Height="60" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,54,0">
+                        <TextBlock Text="Select" Style="{StaticResource BladeFooterTextStyle}" FontSize="20" Canvas.Left="86" Canvas.Top="26" />
+                        <Border Width="24" Height="24" CornerRadius="12" Canvas.Left="132" Canvas.Top="1">
+                          <Border.Background>
+                            <RadialGradientBrush Center="0.35,0.25" RadiusX="0.72" RadiusY="0.72">
+                              <GradientStop Color="#EEFFFFFF" Offset="0" />
+                              <GradientStop Color="#88B8B8B8" Offset="0.75" />
+                              <GradientStop Color="#66909090" Offset="1" />
+                            </RadialGradientBrush>
+                          </Border.Background>
+                          <TextBlock Text="B" Foreground="#99555555" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Grid Width="28" Height="28" Canvas.Left="149" Canvas.Top="27">
+                          <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding Source=Assets/Blades/ProvidedIcons/A-Button.png, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" />
+                          <TextBlock Text="A" Foreground="#F2FFFFFF" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                      </Canvas>
+                    </Grid>
+                  </Border>
+                </Canvas>
+              </Grid>
+              <Grid Canvas.Left="0" Canvas.Top="0" Width="1280" Height="720">
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsBladesGamesLibraryRootSubmenu}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+                <Rectangle Fill="{Binding ActiveBladesAccentBrush}" Opacity="0.34" />
+                <Rectangle Opacity="0.58">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.58,0.33" RadiusX="0.78" RadiusY="0.62">
+                      <GradientStop Color="#A4A3F58A" Offset="0" />
+                      <GradientStop Color="#0055AD46" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <Border Height="90" VerticalAlignment="Top" Background="#71316F2F" />
+                <TextBlock Margin="176,48,0,0" Text="Games Library" Style="{StaticResource BladeSectionTitleStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="162,98,0,0" Width="486" Height="498" Background="#00FFFFFF" ClipToBounds="True">
+                  <ItemsControl ItemsSource="{Binding BladesGameLibraryVisibleMenuItems}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Style="{StaticResource BladesShelfButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                          <Grid Margin="16,0,12,0">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="66" />
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="72" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="34" VerticalAlignment="Center" Foreground="#E8FFFFFF" />
+                            <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource BladeMenuTextStyle}" FontSize="27" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                            <TextBlock Grid.Column="2" Text="{Binding CountText}" Style="{StaticResource BladeMenuTextStyle}" FontSize="27" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                          </Grid>
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="674,112,0,0" Width="430">
+                  <TextBlock Text="{Binding ActiveBladesSelectedItem.DetailTitle}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="29" Margin="0,0,0,14" />
+                  <TextBlock Text="{Binding ActiveBladesSelectedItem.DetailDescription}" Style="{StaticResource BladeBodyTextStyle}" FontSize="25" LineHeight="34" />
+                </StackPanel>
+                <Border Height="116" VerticalAlignment="Bottom" Background="#78316F2F" />
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,170,36">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Back" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="B" Width="26" Height="26" /></StackPanel>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0"><TextBlock Text="Select" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="A" Width="26" Height="26" /></StackPanel>
+                </StackPanel>
+              </Grid>
+              <Grid Canvas.Left="0" Canvas.Top="0" Width="1280" Height="720">
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsBladesStandardSubmenu}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+                <Rectangle Fill="{Binding ActiveBladesAccentBrush}" Opacity="0.34" />
+                <Rectangle Opacity="0.56">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.55,0.35" RadiusX="0.7" RadiusY="0.62">
+                      <GradientStop Color="#AA96EF7E" Offset="0" />
+                      <GradientStop Color="#0055AD46" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <Border Height="90" VerticalAlignment="Top" Background="#78316F2F" />
+                <TextBlock Margin="176,48,0,0" Text="{Binding ActiveBladesTitle}" Style="{StaticResource BladeSectionTitleStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <Border Height="116" VerticalAlignment="Bottom" Background="#78316F2F" />
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="164,144,0,0" Width="486" Height="414" Background="#00FFFFFF" ClipToBounds="True">
+                  <ItemsControl ItemsSource="{Binding BladesGameLibraryVisibleMenuItems}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Height="70" Style="{StaticResource BladesMenuButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                          <Grid Margin="14,0,10,0">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="66" />
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="72" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="34" VerticalAlignment="Center" Foreground="#E8FFFFFF" />
+                            <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource BladeMenuTextStyle}" FontSize="27" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                            <TextBlock Grid.Column="2" Text="{Binding CountText}" Style="{StaticResource BladeMenuTextStyle}" FontSize="27" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                          </Grid>
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="672,150,0,0" Width="446" Height="384" CornerRadius="8" BorderBrush="#66265A28" BorderThickness="2" Background="#25FFFFFF">
+                  <StackPanel Margin="20,18,20,0">
+                    <TextBlock Text="{Binding ActiveBladesSelectedItem.DetailTitle}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="28" Margin="0,0,0,14" />
+                    <TextBlock Text="{Binding ActiveBladesSelectedItem.DetailDescription}" Style="{StaticResource BladeBodyTextStyle}" FontSize="24" LineHeight="33" />
+                  </StackPanel>
+                </Border>
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,170,36">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Back" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="B" Width="26" Height="26" /></StackPanel>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0"><TextBlock Text="Select" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="A" Width="26" Height="26" /></StackPanel>
+                </StackPanel>
+              </Grid>
+              <Grid Canvas.Left="0" Canvas.Top="0" Width="1280" Height="720">
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsBladesGameLibrarySubmenu}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+                <Rectangle Fill="{Binding ActiveBladesAccentBrush}" Opacity="0.34" />
+                <Rectangle Opacity="0.58">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.58,0.33" RadiusX="0.78" RadiusY="0.62">
+                      <GradientStop Color="#A4A3F58A" Offset="0" />
+                      <GradientStop Color="#0055AD46" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <Border Height="90" VerticalAlignment="Top" Background="#71316F2F" />
+                <TextBlock Margin="176,48,0,0" Text="{Binding ActiveBladesTitle}" Style="{StaticResource BladeSectionTitleStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <StackPanel Orientation="Horizontal" Margin="170,108,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                  <TextBlock Text="Played" Foreground="{Binding BladesGameLibraryTab0Foreground}" FontSize="30" Margin="-116,0,72,0" />
+                  <TextBlock Text="All Games" Foreground="{Binding BladesGameLibraryTab1Foreground}" FontSize="30" Margin="0,0,72,0">
+                    <TextBlock.Effect>
+                      <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.4" Color="#FF222222" />
+                    </TextBlock.Effect>
+                  </TextBlock>
+                  <TextBlock Text="Apps" Foreground="{Binding BladesGameLibraryTab2Foreground}" FontSize="30" Margin="0,0,72,0" />
+                  <TextBlock Text="Steam" Foreground="{Binding BladesGameLibraryTab3Foreground}" FontSize="30" Margin="0,0,72,0" />
+                  <TextBlock Text="Manually Added" Foreground="{Binding BladesGameLibraryTab4Foreground}" FontSize="30" />
+                </StackPanel>
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="160,156,0,0" Width="488" Height="382" Background="#00FFFFFF" ClipToBounds="True">
+                  <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                  <ItemsControl ItemsSource="{Binding ActiveBladesMenuItems}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Tag="BladesMenuOption" IsEnabled="{Binding IsEnabled}" Height="56" Style="{StaticResource BladesMenuButtonStyle}" Command="{Binding DataContext.OpenBladesMenuItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                          <Grid Margin="14,0,10,0">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="58" />
+                              <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Width="42" Height="42" VerticalAlignment="Center">
+                              <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                              <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets" FontSize="31" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#E8FFFFFF">
+                                <TextBlock.Style>
+                                  <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                      <DataTrigger Binding="{Binding HasIconPath}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                      </DataTrigger>
+                                    </Style.Triggers>
+                                  </Style>
+                                </TextBlock.Style>
+                              </TextBlock>
+                            </Grid>
+                            <TextBlock Grid.Column="1" Text="{Binding Title}" Style="{StaticResource BladeMenuTextStyle}" FontSize="24" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                          </Grid>
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  </ScrollViewer>
+                </Border>
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="668,156,0,0" Width="450" Height="382" CornerRadius="8" BorderBrush="#66265A28" BorderThickness="2" Background="#30FFFFFF">
+                  <Grid Margin="18,14,18,14">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="*" />
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding ActiveBladesSelectedItem.DetailTitle}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="27" Margin="0,0,0,18" />
+                    <Border Grid.Row="1" Height="84" Background="#2CFFFFFF" Margin="-18,0,-18,14">
+                      <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
+                        <Grid Width="78" Height="58" VerticalAlignment="Center">
+                          <Image Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding ActiveBladesSelectedItem.IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" Visibility="{Binding ActiveBladesSelectedItem.HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                          <TextBlock Text="{Binding ActiveBladesSelectedItem.IconGlyph}" FontFamily="Segoe MDL2 Assets" Foreground="#E8FFFFFF" FontSize="42" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                              <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                  <DataTrigger Binding="{Binding ActiveBladesSelectedItem.HasIconPath}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </TextBlock.Style>
+                          </TextBlock>
+                        </Grid>
+                        <StackPanel>
+                          <TextBlock Text="{Binding ActiveBladesSelectedItem.Title}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="24" TextTrimming="CharacterEllipsis" Width="300" />
+                          <TextBlock Text="Play Now" Style="{StaticResource BladeBodyTextStyle}" FontSize="24" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                    <TextBlock Grid.Row="2" Text="{Binding ActiveBladesSelectedItem.DetailDescription}" Style="{StaticResource BladeBodyTextStyle}" FontSize="21" LineHeight="28" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="3" Text="{Binding ActiveBladesSelectedItem.DetailMetaText}" Style="{StaticResource BladeBodyTextStyle}" FontSize="21" LineHeight="28" TextWrapping="NoWrap" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,8,0,2" />
+                    <TextBlock Grid.Row="4" Text="{Binding ActiveBladesSelectedItem.CountText}" Style="{StaticResource BladeBodyTextStyle}" FontSize="22" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,8,0,0" />
+                  </Grid>
+                </Border>
+                <Border Height="116" VerticalAlignment="Bottom" Background="#78316F2F" />
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,170,36">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Back" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="B" Width="26" Height="26" /></StackPanel>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0"><TextBlock Text="Select" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" VerticalAlignment="Center" Margin="0,0,5,0" /><controls:BladePadGlyph Letter="A" Width="26" Height="26" /></StackPanel>
+                </StackPanel>
+              </Grid>
+              <Grid Canvas.Left="0" Canvas.Top="0" Width="1280" Height="720">
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsBladesAchievementsSubmenu}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+                <Rectangle Fill="{Binding ActiveBladesAccentBrush}" Opacity="0.34" />
+                <Rectangle Opacity="0.58">
+                  <Shape.Fill>
+                    <RadialGradientBrush Center="0.58,0.33" RadiusX="0.78" RadiusY="0.62">
+                      <GradientStop Color="#A4A3F58A" Offset="0" />
+                      <GradientStop Color="#0055AD46" Offset="1" />
+                    </RadialGradientBrush>
+                  </Shape.Fill>
+                </Rectangle>
+                <Border Height="90" VerticalAlignment="Top" Background="#71316F2F" />
+                <TextBlock Margin="176,48,0,0" Text="Achievements" Style="{StaticResource BladeSectionTitleStyle}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="348,106,0,0" Width="774" Height="82" CornerRadius="8" BorderBrush="#66265A28" BorderThickness="2" Background="#30FFFFFF">
+                  <Grid Margin="18,8,18,0">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="38" />
+                      <RowDefinition Height="28" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding BladesAchievementsHeaderTitle}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="27" TextTrimming="CharacterEllipsis" Margin="0,0,150,0" />
+                    <TextBlock Grid.Row="1" Text="{Binding BladesAchievementsHeaderCountText}" Style="{StaticResource BladeBodyTextStyle}" FontSize="22" TextTrimming="CharacterEllipsis" Margin="0,0,150,0" />
+                    <TextBlock Grid.RowSpan="2" Text="{Binding BladesAchievementsHeaderRightText}" Style="{StaticResource BladeDetailTitleStyle}" FontSize="27" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right" />
+                  </Grid>
+                </Border>
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="172,198,0,0" Width="170" Height="360" Background="#22FFFFFF" ClipToBounds="True" BorderThickness="0">
+                  <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBladesAchievementListFocused}" Value="False">
+                          <Setter Property="Background" Value="#30FFFFFF" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <ListBox x:Name="BladesAchievementGameListBox" ItemsSource="{Binding BladesAchievementGameItems}" SelectedIndex="{Binding SelectedBladesAchievementGameIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0" Background="#00FFFFFF" FocusVisualStyle="{x:Null}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" Focusable="True" IsHitTestVisible="True" KeyboardNavigation.DirectionalNavigation="Contained">
+                    <ListBox.ItemContainerStyle>
+                      <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Height" Value="112" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="Background" Value="#00FFFFFF" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="Focusable" Value="False" />
+                        <Setter Property="Template">
+                          <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                              <ContentPresenter />
+                            </ControlTemplate>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <Grid Height="112">
+                          <Rectangle Height="2" Fill="#66315C2E" Margin="22,0,22,0" VerticalAlignment="Top" />
+                          <Border Width="168" Height="102" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="0,14,14,0">
+                            <Border.Style>
+                              <Style TargetType="{x:Type Border}">
+                                <Style.Triggers>
+                                  <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Background" Value="#7FE8FFE2" />
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </Border.Style>
+                          </Border>
+                          <Image Width="76" Height="76" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=128}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Border>
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="368,214,0,0" Width="754" Height="344" Background="#00FFFFFF" ClipToBounds="True" BorderThickness="0">
+                  <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                      <Setter Property="Opacity" Value="0.92" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsBladesAchievementListFocused}" Value="True">
+                          <Setter Property="Opacity" Value="1" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <ListBox x:Name="BladesAchievementListBox" ItemsSource="{Binding BladesAchievementItems}" SelectedIndex="{Binding SelectedBladesAchievementIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0" Background="#00FFFFFF" FocusVisualStyle="{x:Null}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" Focusable="True" IsHitTestVisible="True" KeyboardNavigation.DirectionalNavigation="Contained">
+                    <ListBox.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                      </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                      <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Width" Value="104" />
+                        <Setter Property="Height" Value="92" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0,0,16,22" />
+                        <Setter Property="Background" Value="#00FFFFFF" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="Focusable" Value="False" />
+                        <Setter Property="Template">
+                          <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                              <ContentPresenter />
+                            </ControlTemplate>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <Grid Width="104" Height="92">
+                          <Border Width="98" Height="86" BorderThickness="3" CornerRadius="8">
+                            <Border.Style>
+                              <Style TargetType="{x:Type Border}">
+                                <Setter Property="Background" Value="#442E8A2C" />
+                                <Setter Property="BorderBrush" Value="#873B6D31" />
+                                <Style.Triggers>
+                                  <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Background" Value="#6633772E" />
+                                    <Setter Property="BorderBrush" Value="#E0D9F0CB" />
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </Border.Style>
+                          </Border>
+                          <Image Width="68" Height="68" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=128}" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Border>
+                <Border Height="116" VerticalAlignment="Bottom" Background="#78316F2F" />
+                <Canvas Width="950" Height="62" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="170,0,0,34">
+                  <Border Width="24" Height="24" CornerRadius="12" Background="#65D8EBD0" Canvas.Left="12" Canvas.Top="0">
+                    <TextBlock Text="Y" Foreground="#77555555" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <Border Width="24" Height="24" CornerRadius="12" Background="#65D8EBD0" Canvas.Left="-6" Canvas.Top="31">
+                    <TextBlock Text="X" Foreground="#77555555" FontWeight="SemiBold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Text="Back" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" Canvas.Left="742" Canvas.Top="3" />
+                  <controls:BladePadGlyph Letter="B" Width="26" Height="26" Canvas.Left="815" Canvas.Top="3" />
+                  <TextBlock Text="Select" Style="{StaticResource BladeFooterTextStyle}" FontSize="22" Canvas.Left="742" Canvas.Top="36" />
+                  <controls:BladePadGlyph Letter="A" Width="26" Height="26" Canvas.Left="815" Canvas.Top="36" />
+                </Canvas>
+              </Grid>
+            </Canvas>
+              </Canvas>
+            </Viewbox>
+          </Grid>
           <Grid Name="ContentFrame" Row="1" Width="1280" Height="502" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False">
+            <Grid.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Grid.Style>
             <ContentControl Name="ContentHost" Width="1280" Height="502" Panel.ZIndex="2" HorizontalAlignment="Left" VerticalAlignment="Top" Content="{Binding CurrentTab}">
               <UIElement.RenderTransform>
                 <TranslateTransform x:Name="ContentSlide" X="0" />
@@ -258,6 +1846,16 @@
             </Canvas>
           </Grid>
           <Grid Row="2">
+            <Grid.Style>
+              <Style TargetType="{x:Type Grid}">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Grid.Style>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="112,16,0,0">
               <Border Width="18" Height="18" CornerRadius="9" Background="#FF6CB344">
                 <TextBlock Text="A" Foreground="#FFFFFFFF" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -678,10 +2276,11 @@
               </ItemsControl>
             </Grid>
           </ScrollViewer>
-          <ItemsControl Name="MyAppsItemsControl" Margin="92,172,0,0" Width="1070" Height="430" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False" ItemsSource="{Binding AppLibraryTiles}" Visibility="{Binding IsLibraryShowingApps, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <ScrollViewer Name="MyAppsScrollViewer" Margin="92,172,0,0" Width="1070" Height="430" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PreviewMouseWheel="MyAppsScrollViewer_OnPreviewMouseWheel" Visibility="{Binding IsLibraryShowingApps, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <ItemsControl Name="MyAppsItemsControl" Width="{Binding AppLibraryCanvasWidth}" Height="430" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False" ItemsSource="{Binding AppLibraryTiles}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <Canvas Width="1070" Height="430" ClipToBounds="False" />
+                <Canvas Width="{Binding DataContext.AppLibraryCanvasWidth, RelativeSource={RelativeSource AncestorType=Window}}" Height="430" ClipToBounds="False" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemContainerStyle>
@@ -693,7 +2292,7 @@
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <Button Width="{Binding Width}" Height="{Binding Height}" Style="{StaticResource X360TileButtonStyle}" Command="{Binding DataContext.LaunchAppLibraryTileCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">
+                <Button Width="{Binding Width}" Height="{Binding Height}" Style="{StaticResource X360TileButtonStyle}" Command="{Binding DataContext.LaunchAppLibraryTileCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" MouseEnter="AppLibraryTile_OnMouseEnter">
                   <Grid Background="{Binding TileBrush}" ClipToBounds="True">
                     <Image Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=256}" Width="{Binding Width}" Height="{Binding Height}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasIconPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <TextBlock Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="54" Foreground="{Binding ForegroundBrush}" Opacity="0.95" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,32" Visibility="{Binding HasIconPath, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
@@ -703,6 +2302,7 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+          </ScrollViewer>
           <StackPanel Name="MyGamesFooterChrome" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="75,0,0,34">
             <UIElement.RenderTransform>
               <TranslateTransform x:Name="MyGamesFooterChromeTranslate" X="0" />
@@ -726,7 +2326,25 @@
             <TextBlock Foreground="#FFFFFFFF" FontSize="15" Text="{Binding LibraryMenuYHintText}" />
           </StackPanel>
         </Grid>
-        <Grid Name="LauncherSettingsOverlay" Background="#00FFFFFF" FocusManager.IsFocusScope="True" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle" Visibility="{Binding IsLauncherSettingsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Name="LauncherSettingsOverlay" FocusManager.IsFocusScope="True" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle" Visibility="{Binding IsLauncherSettingsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+              <Setter Property="Background" Value="#00FFFFFF" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                  <Setter Property="Background">
+                    <Setter.Value>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FF7C4AB8" Offset="0" />
+                        <GradientStop Color="#FFA16DDF" Offset="0.34" />
+                        <GradientStop Color="#FF7B49B4" Offset="1" />
+                      </LinearGradientBrush>
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Grid.Style>
           <FrameworkElement.Resources>
             <ResourceDictionary>
               <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}">
@@ -736,7 +2354,7 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Style.Triggers>
                   <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource MetroGreenBrush}" />
+                    <Setter Property="BorderBrush" Value="{Binding BladesOverlayAccentBrush}" />
                     <Setter Property="BorderThickness" Value="3" />
                   </Trigger>
                 </Style.Triggers>
@@ -748,11 +2366,11 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="FontSize" Value="22" />
                 <Setter Property="Padding" Value="10,6" />
-                <Setter Property="TextBoxBase.CaretBrush" Value="{DynamicResource MetroGreenBrush}" />
+                <Setter Property="TextBoxBase.CaretBrush" Value="{Binding BladesOverlayAccentBrush}" />
                 <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource SettingsFocusVisual}" />
                 <Style.Triggers>
                   <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource MetroGreenBrush}" />
+                    <Setter Property="BorderBrush" Value="{Binding BladesOverlayAccentBrush}" />
                     <Setter Property="BorderThickness" Value="3" />
                   </Trigger>
                 </Style.Triggers>
@@ -764,7 +2382,7 @@
                 <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource SettingsFocusVisual}" />
                 <Style.Triggers>
                   <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource MetroGreenBrush}" />
+                    <Setter Property="Foreground" Value="{Binding BladesOverlayAccentBrush}" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                   </Trigger>
                 </Style.Triggers>
@@ -773,7 +2391,7 @@
                 <Setter Property="FrameworkElement.FocusVisualStyle" Value="{StaticResource SettingsFocusVisual}" />
                 <Style.Triggers>
                   <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource MetroGreenBrush}" />
+                    <Setter Property="Foreground" Value="{Binding BladesOverlayAccentBrush}" />
                   </Trigger>
                 </Style.Triggers>
               </Style>
@@ -789,7 +2407,7 @@
                       </Border>
                       <ControlTemplate.Triggers>
                         <Trigger Property="TabItem.IsSelected" Value="True">
-                          <Setter TargetName="CategoryRoot" Property="Border.Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter TargetName="CategoryRoot" Property="Border.Background" Value="{Binding BladesOverlayAccentBrush}" />
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
                         </Trigger>
                         <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
@@ -804,7 +2422,7 @@
                             <Condition Property="UIElement.IsMouseOver" Value="True" />
                             <Condition Property="TabItem.IsSelected" Value="True" />
                           </MultiTrigger.Conditions>
-                          <Setter TargetName="CategoryRoot" Property="Border.Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter TargetName="CategoryRoot" Property="Border.Background" Value="{Binding BladesOverlayAccentBrush}" />
                         </MultiTrigger>
                       </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -847,7 +2465,7 @@
                     <ControlTemplate TargetType="{x:Type Button}">
                       <Border Name="Root" Background="{TemplateBinding Control.Background}" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}">
                         <Grid>
-                          <Border Name="Highlight" Opacity="0" Background="{DynamicResource MetroGreenBrush}" />
+                          <Border Name="Highlight" Opacity="0" Background="{Binding BladesOverlayAccentBrush}" />
                           <ContentPresenter HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" Margin="{TemplateBinding Control.Padding}" />
                         </Grid>
                       </Border>
@@ -900,6 +2518,14 @@
             <ScrollViewer Name="SystemSettingsConsolePanel" Visibility="Collapsed" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
               <StackPanel Margin="0,0,0,18">
                 <ComboBox Height="42" Margin="30,12,30,8" Tag="Display Aspect Ratio|Choose the dashboard window shape." ItemsSource="{Binding ResolutionOptions}" SelectedItem="{Binding Settings.DisplayResolution, Mode=TwoWay}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
+                <TextBlock Text="Dashboard Style" Foreground="#FF333333" FontSize="15" Margin="30,2,30,0" />
+                <ComboBox Height="42" Margin="30,4,30,8" Tag="Dashboard Style|Choose Metro or the classic Blades dashboard shell." ItemsSource="{Binding DashboardStyleOptions}" SelectedItem="{Binding Settings.DashboardStyle, Mode=TwoWay}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
+                <TextBlock Text="Xbox Guide" Foreground="#FF333333" FontSize="15" Margin="30,2,30,0" />
+                <ComboBox Height="42" Margin="30,4,30,8" Tag="Xbox Guide|Choose Metro or Blades independently of Dashboard Style." ItemsSource="{Binding XboxGuideOptions}" SelectedItem="{Binding Settings.XboxGuide, Mode=TwoWay}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
+                <TextBlock Text="Dashboard Sounds" Foreground="#FF333333" FontSize="15" Margin="30,2,30,0" />
+                <ComboBox Height="42" Margin="30,4,30,8" Tag="Dashboard Sounds|Choose which dashboard sound set plays for navigation." ItemsSource="{Binding DashboardSoundOptions}" SelectedItem="{Binding Settings.DashboardSounds, Mode=TwoWay}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
+                <TextBlock Text="Dashboard Startup" Foreground="#FF333333" FontSize="15" Margin="30,2,30,0" />
+                <ComboBox Height="42" Margin="30,4,30,8" Tag="Dashboard Startup|Choose which startup intro plays when the dashboard opens." ItemsSource="{Binding DashboardStartupOptions}" SelectedItem="{Binding Settings.DashboardStartup, Mode=TwoWay}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
                 <CheckBox Content="Start Fullscreen" Style="{StaticResource SettingsCheckBoxStyle}" Tag="Start Fullscreen|Open the dashboard in fullscreen mode." IsChecked="{Binding Settings.StartFullscreen}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
                 <CheckBox Content="Play UI Sounds" Style="{StaticResource SettingsCheckBoxStyle}" Tag="Play UI Sounds|Play dashboard navigation and selection sounds." IsChecked="{Binding Settings.PlayUiSounds}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
                 <CheckBox Content="Enable Controller Input" Style="{StaticResource SettingsCheckBoxStyle}" Tag="Enable Controller Input|Use an Xbox-compatible controller to navigate the dashboard." IsChecked="{Binding Settings.EnableControllerInput}" GotKeyboardFocus="SettingsOption_OnFocusOrMouseEnter" MouseEnter="SettingsOption_OnFocusOrMouseEnter" />
@@ -1031,15 +2657,15 @@
                                   </Border>
                                   <ControlTemplate.Triggers>
                                     <Trigger Property="UIElement.IsFocused" Value="True">
-                                      <Setter TargetName="Root" Property="Border.Background" Value="{DynamicResource MetroGreenBrush}" />
+                                      <Setter TargetName="Root" Property="Border.Background" Value="{Binding BladesOverlayAccentBrush}" />
                                       <Setter Property="Foreground" Value="#FFFFFFFF" />
                                     </Trigger>
                                     <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                                      <Setter TargetName="Root" Property="Border.Background" Value="{DynamicResource MetroGreenBrush}" />
+                                      <Setter TargetName="Root" Property="Border.Background" Value="{Binding BladesOverlayAccentBrush}" />
                                       <Setter Property="Foreground" Value="#FFFFFFFF" />
                                     </Trigger>
                                     <Trigger Property="UIElement.IsMouseOver" Value="True">
-                                      <Setter TargetName="Root" Property="Border.Background" Value="{DynamicResource MetroGreenBrush}" />
+                                      <Setter TargetName="Root" Property="Border.Background" Value="{Binding BladesOverlayAccentBrush}" />
                                       <Setter Property="Foreground" Value="#FFFFFFFF" />
                                     </Trigger>
                                   </ControlTemplate.Triggers>
@@ -1376,7 +3002,7 @@
                       <ControlTemplate.Triggers>
                         <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                           <Setter Property="BorderBrush" Value="#FFFFFFFF" />
                           <Setter Property="BorderThickness" Value="2" />
                           <Setter TargetName="Root" Property="UIElement.Effect">
@@ -1387,14 +3013,14 @@
                         </Trigger>
                         <Trigger Property="UIElement.IsMouseOver" Value="True">
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                           <Setter Property="BorderBrush" Value="#FFFFFFFF" />
                           <Setter Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="Tag" Value="True">
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                          <Setter Property="BorderBrush" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                           <Setter Property="Background" Value="{DynamicResource MetroGreenDarkBrush}" />
@@ -1416,7 +3042,7 @@
                     <ControlTemplate TargetType="{x:Type Button}">
                       <Grid>
                         <ContentPresenter />
-                        <Border Name="FocusFrame" BorderBrush="{DynamicResource MetroGreenBrush}" BorderThickness="4" Opacity="0" />
+                        <Border Name="FocusFrame" BorderBrush="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" BorderThickness="4" Opacity="0" />
                       </Grid>
                       <ControlTemplate.Triggers>
                         <Trigger Property="UIElement.IsKeyboardFocused" Value="True">
@@ -1447,15 +3073,15 @@
                       </Border>
                       <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
                         </DataTrigger>
                         <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="True">
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
                         </Trigger>
                         <Trigger Property="UIElement.IsMouseOver" Value="True">
-                          <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                          <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                           <Setter Property="Foreground" Value="#FFFFFFFF" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
@@ -1484,6 +3110,17 @@
                 </Setter.Value>
               </Setter>
               <Style.Triggers>
+                <DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades">
+                  <Setter Property="Background">
+                    <Setter.Value>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FF227FBA" Offset="0" />
+                        <GradientStop Color="#FF35A2DC" Offset="0.36" />
+                        <GradientStop Color="#FF1F77AF" Offset="1" />
+                      </LinearGradientBrush>
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
                 <DataTrigger Value="True" Binding="{Binding IsMusicPlayerTransparent}">
                   <Setter Property="Background" Value="#00FFFFFF" />
                 </DataTrigger>
@@ -1622,7 +3259,7 @@
                                 <Setter Property="Background" Value="#18FFFFFF" />
                                 <Style.Triggers>
                                   <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource MetroGreenBrush}" />
+                                    <Setter Property="Background" Value="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                   </DataTrigger>
                                 </Style.Triggers>
                               </Style>
@@ -1712,7 +3349,7 @@
                             </Style>
                           </Grid.Style>
                           <TextBlock Foreground="#FF5F6669" FontSize="21" Margin="30,0,24,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Title}" />
-                          <TextBlock Text="playing" Foreground="{DynamicResource MetroGreenBrush}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0">
+                          <TextBlock Text="playing" Foreground="{Binding DataContext.BladesOverlayAccentBrush, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0">
                             <FrameworkElement.Style>
                               <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -1853,7 +3490,7 @@
                         <RowDefinition Height="28" />
                       </Grid.RowDefinitions>
                       <TextBlock Text="Rep" Foreground="#FF252A2E" FontSize="20" />
-                      <TextBlock Grid.Column="1" Text="★★★★★" Foreground="#FF8A8F93" FontSize="22" HorizontalAlignment="Right" />
+                      <TextBlock Grid.Column="1" Text="&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;" FontFamily="Segoe UI Symbol" Foreground="#FF8A8F93" FontSize="22" HorizontalAlignment="Right" />
                       <TextBlock Grid.Row="1" Text="Gamerscore" Foreground="#FF252A2E" FontSize="20" />
                       <TextBlock Grid.Row="1" Grid.Column="1" Foreground="#FF252A2E" FontSize="20" HorizontalAlignment="Right" Visibility="{Binding IsProfileMenuEditing, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <Run Text="{Binding Profile.Gamerscore, Mode=OneWay}" /><Run Text=" G" />
@@ -1908,14 +3545,38 @@
               </RadialGradientBrush>
             </Shape.Fill>
           </Rectangle>
+          <Grid IsHitTestVisible="False">
+            <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Grid.Style>
+            <controls:BladeAmbientTexture Tint="#FF328DCA" />
+            <Grid x:Name="BladesLoadingChrome">
+            <Border Height="88" VerticalAlignment="Top" Background="#30435467" BorderBrush="#50718891" BorderThickness="0,0,0,1">
+              <TextBlock x:Name="BladesLoadingTitle" Foreground="#FFE5EAEA" FontFamily="Convection, Segoe UI" FontSize="27" Margin="166,0,0,12" VerticalAlignment="Bottom">
+                <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="{Binding ActiveBladesTitle}"/><Style.Triggers>
+                  <DataTrigger Binding="{Binding IsLauncherSettingsOpen}" Value="True"><Setter Property="Text" Value="Console"/></DataTrigger>
+                  <DataTrigger Binding="{Binding IsMyGamesOpen}" Value="True"><Setter Property="Text" Value="Game Library"/></DataTrigger>
+                  <DataTrigger Binding="{Binding IsMusicPlayerOpen}" Value="True"><Setter Property="Text" Value="{Binding MusicPlayerHeaderText}"/></DataTrigger>
+                </Style.Triggers></Style></TextBlock.Style>
+              </TextBlock>
+            </Border>
+            <Border Height="120" VerticalAlignment="Bottom" Background="#234E6379" BorderBrush="#805D8596" BorderThickness="0,1,0,0" />
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,166,48" IsHitTestVisible="False">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Back" FontSize="24" Foreground="#FFE7EBE9" Margin="0,0,4,0"/><controls:BladePadGlyph Letter="B" Width="25" Height="25"/></StackPanel>
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Select" FontSize="24" Foreground="#FFE7EBE9" Margin="0,0,4,0"/><controls:BladePadGlyph Letter="A" Width="25" Height="25"/></StackPanel>
+            </StackPanel>
+          </Grid>
+          </Grid>
           <Grid Name="FakeLoadingIndicator" Width="96" Height="96" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,-2" IsHitTestVisible="False">
             <Canvas Width="96" Height="96" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas.Style><Style TargetType="Canvas"><Style.Triggers><DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Canvas.Style>
               <Path Name="FakeLoadingRing" Stroke="#F4FFFFFF" StrokeThickness="3.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M48,23 A25,25 0 1 1 31,66">
                 <UIElement.RenderTransform>
                   <RotateTransform x:Name="FakeLoadingRingRotate" Angle="0" CenterX="48" CenterY="48" />
                 </UIElement.RenderTransform>
               </Path>
             </Canvas>
+            <controls:BladesLoadingIndicator Width="76" Height="76">
+              <controls:BladesLoadingIndicator.Style><Style TargetType="controls:BladesLoadingIndicator"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding Settings.DashboardStyle}" Value="Blades"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></controls:BladesLoadingIndicator.Style>
+            </controls:BladesLoadingIndicator>
           </Grid>
         </Grid>
         <Canvas Name="SignInToastOverlay" Width="1280" Height="720" ClipToBounds="False" IsHitTestVisible="False" ZIndex="1000">

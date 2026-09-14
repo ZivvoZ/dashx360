@@ -112,6 +112,12 @@ public partial class MainWindow : Window
 
 	private int _gamesOpenCount;
 
+	private int _achievementsOpenCount;
+
+	private int _playedGamesOpenCount;
+
+	private int _musicOpenCount;
+
 	private int _appsOpenCount;
 
 	private bool _isAnimatingTab;
@@ -128,7 +134,7 @@ public partial class MainWindow : Window
 
 	private Point? _lastMousePosition;
 
-	private GuideWindow? _guideWindow;
+	private IGuideWindow? _guideWindow;
 
 	private GuideViewModel? _guideViewModel;
 
@@ -200,8 +206,21 @@ public partial class MainWindow : Window
 		IImportExportService importExportService = new ImportExportService(libraryService, profileService, settingsService, writableAppDataPath);
 		IRunningGameService runningGameService = new RunningGameService();
 		DashboardViewModel viewModel = null;
-		_viewModel = new DashboardViewModel(audioService: _audioService = new AudioService(() => viewModel?.Settings.PlayUiSounds ?? true, AudioHost, () => viewModel?.Settings.AudioOutputDeviceName ?? "Default", () => viewModel?.Settings.DashboardVolume ?? 1.0), libraryService: libraryService, launchService: new GameLaunchService(), searchService: new SearchService(), settingsService: settingsService, profileService: profileService, filePickerService: new WindowsFilePickerService(), importExportService: importExportService, steamLibraryScannerService: new SteamLibraryScannerService(), steamCommunityService: _steamCommunityService, themeService: new ThemeService(), startupRegistrationService: new RegistryStartupRegistrationService(), socialIntegrationManager: _socialIntegrationManager, runningGameService: runningGameService);
+		_viewModel = new DashboardViewModel(audioService: _audioService = new AudioService(() => viewModel?.Settings.PlayUiSounds ?? true, AudioHost, () => viewModel?.Settings.AudioOutputDeviceName ?? "Default", () => viewModel?.Settings.DashboardVolume ?? 1.0, () => viewModel?.Settings.DashboardSounds ?? "Metro"), libraryService: libraryService, launchService: new GameLaunchService(), searchService: new SearchService(), settingsService: settingsService, profileService: profileService, filePickerService: new WindowsFilePickerService(), importExportService: importExportService, steamLibraryScannerService: new SteamLibraryScannerService(), steamCommunityService: _steamCommunityService, themeService: new ThemeService(), startupRegistrationService: new RegistryStartupRegistrationService(), socialIntegrationManager: _socialIntegrationManager, runningGameService: runningGameService);
 		viewModel = _viewModel;
+		BladesArtworkHost.NavigationFrame += (from, to, progress, seconds, boundary) =>
+		{
+			BladesCenterHost.ApplyNavigationFrame(from, to, progress, boundary, BladesArtworkHost.NavigationOutgoingClip);
+			BladesContentCanvas.Opacity = string.Equals(to, _viewModel.ActiveBladesBlade?.Key, StringComparison.OrdinalIgnoreCase)
+				? Math.Clamp((seconds - 0.200) / 0.133, 0.0, 1.0) : 0.0;
+			BladesContentCanvas.IsHitTestVisible = false;
+		};
+		BladesArtworkHost.NavigationCompleted += () =>
+		{
+			BladesCenterHost.FinishNavigation();
+			BladesContentCanvas.Opacity = 1.0;
+			BladesContentCanvas.IsHitTestVisible = true;
+		};
 		base.DataContext = _viewModel;
 		_lastRenderedTab = _viewModel.CurrentTab;
 		_controllerInputService = new ControllerInputService(HandleControllerInputAction, () => _viewModel.Settings.EnableControllerInput);
@@ -231,6 +250,10 @@ public partial class MainWindow : Window
 		};
 		_viewModel.PropertyChanged += ViewModel_OnPropertyChanged;
 		_viewModel.FriendsOverlayRequested += ViewModel_OnFriendsOverlayRequested;
+		_viewModel.BladesSubmenuTransition = TransitionBladesSubmenuAsync;
+		_viewModel.BladesMusicRequested += ViewModel_OnBladesMusicRequested;
+		_viewModel.PartyOverlayRequested += ViewModel_OnPartyOverlayRequested;
+		_viewModel.AchievementOverlayRequested += ViewModel_OnAchievementOverlayRequested;
 		_viewModel.ToastRequested += ViewModel_OnToastRequested;
 		ApplyDisplaySettings();
 	}
@@ -280,6 +303,7 @@ public partial class MainWindow : Window
 		try
 		{
 			await _viewModel.LoadStartupSettingsAsync();
+			_audioService.WarmUp(ShouldRunBladesRunnerStartup() ? "dash_2ndLevelClose" : "startup");
 			_viewModel.RefreshAudioOutputDevices();
 			_viewModel.Settings.PropertyChanged += Settings_OnPropertyChanged;
 			ApplyDisplaySettings();
@@ -296,6 +320,7 @@ public partial class MainWindow : Window
 			_startupInitializationComplete = true;
 			if (!_viewModel.IsBooting && !StartFakeLoadingIfReady())
 			{
+				PlayStartupSound();
 				ScheduleStartupPrewarm();
 				FocusFirstButton();
 				_ = RunSignInToastSequenceAsync();
@@ -314,6 +339,9 @@ public partial class MainWindow : Window
 		Mouse.OverrideCursor = null;
 		_viewModel.Settings.PropertyChanged -= Settings_OnPropertyChanged;
 		_viewModel.FriendsOverlayRequested -= ViewModel_OnFriendsOverlayRequested;
+		_viewModel.BladesMusicRequested -= ViewModel_OnBladesMusicRequested;
+		_viewModel.PartyOverlayRequested -= ViewModel_OnPartyOverlayRequested;
+		_viewModel.AchievementOverlayRequested -= ViewModel_OnAchievementOverlayRequested;
 		_viewModel.ToastRequested -= ViewModel_OnToastRequested;
 		_guideWindow?.Close();
 		_guideViewModel?.Dispose();
@@ -396,6 +424,11 @@ public partial class MainWindow : Window
 			}
 			ApplyDisplaySettings();
 		}
+		else if (propertyName == "DashboardStyle")
+		{
+			_viewModel.RefreshDashboardStyleBindings();
+			UpdateThemeBackgroundVisual();
+		}
 	}
 
 	private void ApplyDisplaySettings()
@@ -433,12 +466,16 @@ public partial class MainWindow : Window
 		}
 		else if (_viewModel.IsBooting)
 		{
-			SkipBootIntro();
+			SkipBootIntro(userInitiated: true);
 			e.Handled = true;
 		}
 		else if (DashboardInputRouter.TryMapKey(e, out action))
 		{
 			e.Handled = true;
+			if (TryHandleBladesAchievementsInputEarly(action))
+			{
+				return;
+			}
 			HandleInputAction(action);
 		}
 	}
@@ -452,7 +489,7 @@ public partial class MainWindow : Window
 		}
 		else if (_viewModel.IsBooting)
 		{
-			SkipBootIntro();
+			SkipBootIntro(userInitiated: true);
 			e.Handled = true;
 		}
 		else
@@ -484,6 +521,10 @@ public partial class MainWindow : Window
 	private void HandleControllerInputAction(DashboardInputAction action)
 	{
 		HideMouseCursorForController();
+		if (TryHandleBladesAchievementsInputEarly(action))
+		{
+			return;
+		}
 		_isHandlingControllerInput = true;
 		try
 		{
@@ -506,6 +547,21 @@ public partial class MainWindow : Window
 			App.LogException(exception, "MainWindow.HandleInputAction");
 			_isAnimatingTab = false;
 			_isFocusUpdateQueued = false;
+		}
+	}
+
+	private bool TryHandleBladesAchievementsInputEarly(DashboardInputAction action)
+	{
+		try
+		{
+			return !_isFakeLoadingActive
+				&& !_viewModel.IsBooting
+				&& _viewModel.HandleBladesAchievementsSubmenuInput(action);
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.TryHandleBladesAchievementsInputEarly");
+			return false;
 		}
 	}
 
@@ -544,7 +600,7 @@ public partial class MainWindow : Window
 
 	private void HandleInputActionCore(DashboardInputAction action)
 	{
-		if (_isFakeLoadingActive || _isMenuFakeLoadingActive || _isMenuTransitionActive)
+		if (_isFakeLoadingActive || _isMenuFakeLoadingActive || _isMenuTransitionActive || _viewModel.IsBladesMenuTransitioning)
 		{
 			return;
 		}
@@ -558,10 +614,10 @@ public partial class MainWindow : Window
 			{
 				return;
 			}
-			GuideWindow? guideWindow = _guideWindow;
+			IGuideWindow? guideWindow = _guideWindow;
 			if (guideWindow == null || !guideWindow.IsTransitioning)
 			{
-				GuideWindow? guideWindow2 = _guideWindow;
+				IGuideWindow? guideWindow2 = _guideWindow;
 				if (guideWindow2 != null && guideWindow2.IsGuideOpen)
 				{
 					HideGuide();
@@ -573,7 +629,7 @@ public partial class MainWindow : Window
 			}
 			return;
 		}
-		GuideWindow? guideWindow3 = _guideWindow;
+		IGuideWindow? guideWindow3 = _guideWindow;
 		if (guideWindow3 != null && guideWindow3.IsGuideOpen)
 		{
 			_guideWindow.HandleInput(action);
@@ -590,7 +646,20 @@ public partial class MainWindow : Window
 			}
 			if (_viewModel.IsBooting)
 			{
-				SkipBootIntro();
+				SkipBootIntro(userInitiated: true);
+				return;
+			}
+			if (_viewModel.IsBladesAchievementsSubmenu && _viewModel.HandleBladesAchievementsSubmenuInput(action))
+			{
+				return;
+			}
+			if (_viewModel.IsBladesDashboardStyle && _viewModel.IsBladesSubmenuOpen && !_viewModel.IsDetailsOpen && !_viewModel.IsMyGamesOpen && !_viewModel.IsLauncherSettingsOpen && !_viewModel.IsSearchOverlayOpen)
+			{
+				_viewModel.HandleInput(action);
+				if (!_viewModel.IsBladesAchievementsSubmenu)
+				{
+					QueueBladesMenuFocus();
+				}
 				return;
 			}
 			if (_viewModel.IsMusicNowPlayingScreen && IsFocusInside((DependencyObject)(object)MusicPlayerLeftPane) && ((uint)action <= 3u || action == DashboardInputAction.Activate))
@@ -667,6 +736,12 @@ public partial class MainWindow : Window
 					flag = ((action == DashboardInputAction.MoveLeft || action == DashboardInputAction.PreviousTab) ? true : false);
 					_queuedTabStep = ((!flag) ? 1 : (-1));
 				}
+				return;
+			}
+			if (_viewModel.IsBladesDashboardStyle && !IsOverlayOpen())
+			{
+				_viewModel.HandleInput(action);
+				QueueBladesMenuFocus();
 				return;
 			}
 			if ((uint)(action - 12) <= 1u)
@@ -764,7 +839,8 @@ public partial class MainWindow : Window
 
 	private void EnsureGuideWindow()
 	{
-		if (_guideWindow != null)
+		bool blades = _viewModel.Settings.XboxGuide == "Blades" || _viewModel.Settings.XboxGuide == "Blades BETA";
+		if (_guideWindow != null && (_guideWindow is BladesGuideWindow) == blades)
 		{
 			return;
 		}
@@ -782,7 +858,7 @@ public partial class MainWindow : Window
 		}
 		_guideViewModel?.Dispose();
 		_guideViewModel = new GuideViewModel(_viewModel, this, HideGuide, _audioService, _friendsService, _socialIntegrationManager, _steamCommunityService);
-		_guideWindow = new GuideWindow(_guideViewModel);
+		_guideWindow = blades ? new BladesGuideWindow(_guideViewModel) : new GuideWindow(_guideViewModel);
 		_guideWindow.HiddenCompleted += GuideWindow_OnHiddenCompleted;
 		_guideWindow.Closed += GuideWindow_OnClosed;
 	}
@@ -911,6 +987,24 @@ public partial class MainWindow : Window
 		}
 	}
 
+	private async void ViewModel_OnBladesMusicRequested(object? sender, EventArgs e)
+	{
+		try
+		{
+			if (_viewModel.Settings.EnableFakeLoading && ShouldRunMenuFakeLoading("music"))
+			{
+				BladesLoadingTitle.Text="Music";
+				await RunMenuFakeLoadingSequenceAsync();
+				BladesLoadingTitle.ClearValue(TextBlock.TextProperty);
+			}
+			EnsureGuideWindow();
+			RememberGuideReturnFocus();
+			if (_guideWindow is BladesGuideWindow blades) blades.OpenMusicFromDashboard();
+			else _guideViewModel?.OpenGuideMusicMenuCommand.Execute(null);
+		}
+		catch (Exception ex) { App.LogException(ex,"Blades.OpenMusic"); }
+	}
+
 	private void OpenGuideFriendsOverlay()
 	{
 		EnsureGuideWindow();
@@ -918,6 +1012,54 @@ public partial class MainWindow : Window
 		{
 			RememberGuideReturnFocus();
 			_guideViewModel.OpenFriendsOverlayFromDashboard();
+			_audioService.Play("guide-open");
+			_guideWindow.Open(resetToHome: false);
+		}
+	}
+
+	private void ViewModel_OnPartyOverlayRequested(object? sender, EventArgs e)
+	{
+		try
+		{
+			OpenGuidePartyOverlay();
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.ViewModel_OnPartyOverlayRequested");
+		}
+	}
+
+	private void ViewModel_OnAchievementOverlayRequested(object? sender, DashboardViewModel.DashboardAchievementOpenRequest e)
+	{
+		try
+		{
+			OpenGuideAchievementOverlay(e);
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.ViewModel_OnAchievementOverlayRequested");
+		}
+	}
+
+	private void OpenGuidePartyOverlay()
+	{
+		EnsureGuideWindow();
+		if (_guideWindow != null && _guideViewModel != null && !_guideWindow.IsTransitioning)
+		{
+			RememberGuideReturnFocus();
+			_guideViewModel.OpenPartyOverlayFromDashboard();
+			_audioService.Play("guide-open");
+			_guideWindow.Open(resetToHome: false);
+		}
+	}
+
+	private void OpenGuideAchievementOverlay(DashboardViewModel.DashboardAchievementOpenRequest request)
+	{
+		EnsureGuideWindow();
+		if (_guideWindow != null && _guideViewModel != null && !_guideWindow.IsTransitioning)
+		{
+			RememberGuideReturnFocus();
+			_guideViewModel.OpenAchievementFromDashboard(request.SteamAppId, request.AchievementApiName);
 			_audioService.Play("guide-open");
 			_guideWindow.Open(resetToHome: false);
 		}
@@ -965,6 +1107,7 @@ public partial class MainWindow : Window
 
 	private void GuideWindow_OnHiddenCompleted(object? sender, EventArgs e)
 	{
+		if (sender is BladesGuideWindow && WindowState == WindowState.Minimized) return;
 		if (_guideRestoreExternalWindow && RestoreExternalWindowAfterGuide())
 		{
 			_restoreFocusAfterGuideClose = false;
@@ -1050,7 +1193,8 @@ public partial class MainWindow : Window
 
 	private void StartBootVideo()
 	{
-		string text = AppPaths.FindFile(System.IO.Path.Combine("Assets", "Boot", "Boot Screen.mp4"));
+		bool useBladesStartup = ShouldUseBladesStartupVideoAudio();
+		string text = AppPaths.FindFile(System.IO.Path.Combine("Assets", "Boot", useBladesStartup ? "Blades Startup.mp4" : "Boot Screen.mp4"));
 		if (!File.Exists(text))
 		{
 			SkipBootIntro();
@@ -1061,7 +1205,7 @@ public partial class MainWindow : Window
 		}
 		else
 		{
-			StartBrowserBootPlayback(text);
+			StartBrowserBootPlayback(text, useBladesStartup);
 		}
 	}
 
@@ -1091,7 +1235,7 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void StartBrowserBootPlayback(string bootVideoPath)
+	private void StartBrowserBootPlayback(string bootVideoPath, bool useNativeAudio)
 	{
 		//IL_0041: Unknown result type (might be due to invalid IL or missing references)
 		//IL_0046: Unknown result type (might be due to invalid IL or missing references)
@@ -1099,8 +1243,14 @@ public partial class MainWindow : Window
 		try
 		{
 			string absoluteUri = new Uri(bootVideoPath).AbsoluteUri;
-			_bootBrowser.DocumentText = "<!doctype html>\n<html>\n<head>\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <style>\n        html, body {\n            width: 100%;\n            height: 100%;\n            margin: 0;\n            overflow: hidden;\n            background: #fff;\n        }\n        video {\n            width: 100vw;\n            height: 100vh;\n            object-fit: contain;\n            background: #fff;\n            display: block;\n        }\n    </style>\n</head>\n<body>\n    <video id=\"boot\" src=\"" + absoluteUri + "\" autoplay muted playsinline></video>\n    <script>\n        var boot = document.getElementById('boot');\n        boot.muted = true;\n        boot.volume = 0;\n        boot.play();\n    </script>\n</body>\n</html>";
-			_ = PlayBootIntroSoundAfterBrowserStartsAsync();
+			string mutedAttribute = useNativeAudio ? string.Empty : " muted";
+			string mutedScript = useNativeAudio ? "false" : "true";
+			string volumeScript = useNativeAudio ? "1" : "0";
+			_bootBrowser.DocumentText = "<!doctype html>\n<html>\n<head>\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <style>\n        html, body {\n            width: 100%;\n            height: 100%;\n            margin: 0;\n            overflow: hidden;\n            background: #fff;\n        }\n        video {\n            width: 100vw;\n            height: 100vh;\n            object-fit: contain;\n            background: #fff;\n            display: block;\n        }\n    </style>\n</head>\n<body>\n    <video id=\"boot\" src=\"" + absoluteUri + "\" autoplay" + mutedAttribute + " playsinline></video>\n    <script>\n        var boot = document.getElementById('boot');\n        boot.muted = " + mutedScript + ";\n        boot.volume = " + volumeScript + ";\n        boot.play();\n    </script>\n</body>\n</html>";
+			if (!useNativeAudio)
+			{
+				_ = PlayBootIntroSoundAfterBrowserStartsAsync();
+			}
 			_bootStartedAt = DateTime.UtcNow;
 			if (_bootStateTimer == null)
 			{
@@ -1121,6 +1271,10 @@ public partial class MainWindow : Window
 
 	private void PlayStartupSound()
 	{
+		if (!_startupInitializationComplete || ShouldRunBladesRunnerStartup())
+		{
+			return;
+		}
 		if (_startupSoundPlayed)
 		{
 			return;
@@ -1343,7 +1497,7 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void SkipBootIntro()
+	private void SkipBootIntro(bool userInitiated = false)
 	{
 		if (!_bootSkipped)
 		{
@@ -1354,10 +1508,18 @@ public partial class MainWindow : Window
 				bootStateTimer.Stop();
 			}
 			_audioService.Stop("boot-intro");
+			if (userInitiated)
+			{
+				_audioService.Stop("startup");
+				CleanupBootBrowser();
+			}
 			bool num = StartFakeLoadingIfReady(bootHandoff: true);
-			ScheduleBootBrowserCleanup();
+			if (!userInitiated)
+			{
+				ScheduleBootBrowserCleanup();
+			}
 			_viewModel.IsBooting = false;
-			if (!num)
+			if (!num && _startupInitializationComplete)
 			{
 				PlayStartupSound();
 				ScheduleStartupPrewarm();
@@ -1380,7 +1542,7 @@ public partial class MainWindow : Window
 	{
 		try
 		{
-			await Task.Delay(60000);
+			await Task.Delay(2000);
 			await ((DispatcherObject)this).Dispatcher.InvokeAsync((Action)CleanupBootBrowser, DispatcherPriority.ApplicationIdle);
 		}
 		catch (Exception exception)
@@ -1691,7 +1853,7 @@ public partial class MainWindow : Window
 
 	private bool StartFakeLoadingIfReady(bool bootHandoff = false)
 	{
-		if (_fakeLoadingStarted || !_startupInitializationComplete || (_viewModel.IsBooting && !bootHandoff) || !_viewModel.Settings.EnableFakeLoading)
+		if (_fakeLoadingStarted || !_startupInitializationComplete || (_viewModel.IsBooting && !bootHandoff) || (!_viewModel.Settings.EnableFakeLoading && !ShouldRunBladesRunnerStartup()))
 		{
 			return false;
 		}
@@ -1706,6 +1868,7 @@ public partial class MainWindow : Window
 		try
 		{
 			_isFakeLoadingActive = true;
+			BladesLoadingChrome.Visibility = Visibility.Collapsed;
 			FakeLoadingOverlay.Visibility = Visibility.Visible;
 			FakeLoadingOverlay.Opacity = (bootHandoff ? 1 : 0);
 			FakeLoadingIndicator.Opacity = 1.0;
@@ -1732,24 +1895,40 @@ public partial class MainWindow : Window
 			SignInToastIconScale.ScaleY = 0.56;
 			StartFakeLoadingRingAnimation();
 			PrewarmStartupUi();
-			if (!bootHandoff)
+			if (!_viewModel.Settings.EnableFakeLoading) FakeLoadingOverlay.Visibility=Visibility.Collapsed;
+			if (!bootHandoff && _viewModel.Settings.EnableFakeLoading)
 			{
 				await AnimateDoubleAsync(FakeLoadingOverlay, UIElement.OpacityProperty, 0.0, 1.0, 260, null);
 			}
-			await Task.Delay(1260);
-			await AnimateDoubleAsync(FakeLoadingIndicator, UIElement.OpacityProperty, 1.0, 0.0, 140, null);
-			await Task.Delay(60);
+			if (_viewModel.Settings.EnableFakeLoading)
+			{
+				await Task.Delay(1150);
+				await AnimateDoubleAsync(FakeLoadingIndicator, UIElement.OpacityProperty, 1.0, 0.0, 120, null);
+				await Task.Delay(40);
+			}
 			CubicEase easing = new CubicEase
 			{
 				EasingMode = EasingMode.EaseOut
 			};
-			PlayStartupSound();
-			Task task = AnimateDoubleAsync(DashboardContentHost, UIElement.OpacityProperty, 0.0, 1.0, 470, easing);
-			Task task2 = AnimateDoubleAsync(DashboardStartupScale, ScaleTransform.ScaleXProperty, 0.965, 1.0, 470, easing);
-			Task task3 = AnimateDoubleAsync(DashboardStartupScale, ScaleTransform.ScaleYProperty, 0.965, 1.0, 470, easing);
-			Task task4 = AnimateDoubleAsync(DashboardStartupTranslate, TranslateTransform.YProperty, 18.0, 0.0, 470, easing);
-			Task task5 = AnimateDoubleAsync(FakeLoadingOverlay, UIElement.OpacityProperty, 1.0, 0.0, 520, easing);
-			await Task.WhenAll(task, task2, task3, task4, task5);
+			StopFakeLoadingRingAnimation();
+			if (ShouldRunBladesRunnerStartup())
+			{
+				PrepareBladesRunnerStartup();
+				Task loadingFade = AnimateDoubleAsync(FakeLoadingOverlay, UIElement.OpacityProperty, 1.0, 0.0, 140, easing);
+				Task opening = AnimateBladesRunnerStartupAsync(easing);
+				await Task.WhenAll(loadingFade, opening);
+				FakeLoadingOverlay.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				PlayStartupSound();
+				Task task = AnimateDoubleAsync(DashboardContentHost, UIElement.OpacityProperty, 0.0, 1.0, 470, easing);
+				Task task2 = AnimateDoubleAsync(DashboardStartupScale, ScaleTransform.ScaleXProperty, 0.965, 1.0, 470, easing);
+				Task task3 = AnimateDoubleAsync(DashboardStartupScale, ScaleTransform.ScaleYProperty, 0.965, 1.0, 470, easing);
+				Task task4 = AnimateDoubleAsync(DashboardStartupTranslate, TranslateTransform.YProperty, 18.0, 0.0, 470, easing);
+				Task task5 = AnimateDoubleAsync(FakeLoadingOverlay, UIElement.OpacityProperty, 1.0, 0.0, 520, easing);
+				await Task.WhenAll(task, task2, task3, task4, task5);
+			}
 			FakeLoadingOverlay.Visibility = Visibility.Collapsed;
 			_viewModel.IsBooting = false;
 			_isFakeLoadingActive = false;
@@ -1819,6 +1998,7 @@ public partial class MainWindow : Window
 			DashboardStartupScale.ScaleX = 1.0;
 			DashboardStartupScale.ScaleY = 1.0;
 			DashboardStartupTranslate.Y = 0.0;
+			ResetBladesRunnerStartup();
 			SignInToast.Opacity = 0.0;
 			SignInToastGlow.Opacity = 0.0;
 			SignInToastGlowScale.ScaleX = 0.0;
@@ -1842,6 +2022,244 @@ public partial class MainWindow : Window
 		}
 	}
 
+	private bool ShouldRunBladesRunnerStartup()
+	{
+		return _viewModel != null
+			&& string.Equals(_viewModel.Settings.DashboardStyle, "Blades", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private bool ShouldUseBladesStartupVideoAudio()
+	{
+		return _viewModel != null
+			&& string.Equals(_viewModel.Settings.DashboardStartup, "Blades", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private void PrepareBladesRunnerStartup()
+	{
+		DashboardContentHost.BeginAnimation(UIElement.OpacityProperty, null);
+		DashboardContentHost.Opacity = 1.0;
+		DashboardStartupScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+		DashboardStartupScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+		DashboardStartupTranslate.BeginAnimation(TranslateTransform.YProperty, null);
+		DashboardStartupScale.ScaleX = 1.0;
+		DashboardStartupScale.ScaleY = 1.0;
+		DashboardStartupTranslate.Y = 0.0;
+
+		BladesBootRunnerOverlay.Visibility = Visibility.Visible;
+		BladesBootRunnerOverlay.Opacity = 1.0;
+		BladesStartupGreenReveal.Visibility = Visibility.Visible;
+		BladesStartupGreenReveal.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesStartupGreenReveal.Opacity = 1.0;
+		BladesBootLeftRunnerImage.Opacity = 1.0;
+		BladesBootRightRunnerImage.Opacity = 1.0;
+		BladesBootLeftRunnerOpenImage.Opacity = 0.0;
+		BladesBootRightRunnerOpenImage.Opacity = 0.0;
+		BladesBootLeftRunnerTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+		BladesBootRightRunnerTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+		BladesBootLeftRunnerTranslate.X = 714.0 - 739.0;
+		BladesBootRightRunnerTranslate.X = 1228.0 - 1203.0;
+
+		BladesArtworkHost.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesContentCanvas.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesCenterHost.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesCenterHost.Opacity = 0.0;
+		BladesArtworkHost.StartupElapsedSeconds = 0.0;
+		BladesArtworkHost.StartupOpenProgress = 0.0;
+		BladesArtworkHost.Opacity = 1.0;
+		BladesContentCanvas.Opacity = 0.0;
+	}
+
+	private async Task AnimateBladesRunnerStartupAsync(IEasingFunction easing)
+	{
+		await ((DispatcherObject)this).Dispatcher.InvokeAsync((Action)delegate
+		{
+		}, DispatcherPriority.Render);
+
+		await RunBladesStartupTimelineAsync();
+		BladesArtworkHost.StartupElapsedSeconds = 1.167;
+		BladesArtworkHost.StartupOpenProgress = 1.0;
+		ResetBladesRunnerStartup();
+	}
+
+	private async Task RunBladesStartupTimelineAsync()
+	{
+		_audioService.Play("dash_2ndLevelClose");
+		(TimeSpan Time, double LeftEdge, double RightEdge)[] runnerKeys =
+		{
+			(TimeSpan.FromSeconds(0.000), 714.0, 1228.0),
+			(TimeSpan.FromSeconds(1.0 / 30.0), 691.0, 1250.0),
+			(TimeSpan.FromSeconds(2.0 / 30.0), 649.0, 1290.0),
+			(TimeSpan.FromSeconds(3.0 / 30.0), 610.0, 1328.0),
+			(TimeSpan.FromSeconds(4.0 / 30.0), 571.0, 1365.0),
+			(TimeSpan.FromSeconds(5.0 / 30.0), 533.0, 1402.0),
+			(TimeSpan.FromSeconds(6.0 / 30.0), 497.0, 1437.0),
+			(TimeSpan.FromSeconds(7.0 / 30.0), 448.0, 1484.0),
+			(TimeSpan.FromSeconds(8.0 / 30.0), 429.0, 1502.0),
+			(TimeSpan.FromSeconds(9.0 / 30.0), 396.0, 1534.0),
+			(TimeSpan.FromSeconds(10.0 / 30.0), 363.0, 1565.0),
+			(TimeSpan.FromSeconds(11.0 / 30.0), 332.0, 1595.0),
+			(TimeSpan.FromSeconds(12.0 / 30.0), 301.0, 1624.0),
+			(TimeSpan.FromSeconds(13.0 / 30.0), 271.0, 1653.0),
+			(TimeSpan.FromSeconds(14.0 / 30.0), 242.0, 1681.0),
+			(TimeSpan.FromSeconds(15.0 / 30.0), 213.0, 1708.0),
+			(TimeSpan.FromSeconds(16.0 / 30.0), 185.0, 1734.0),
+			(TimeSpan.FromSeconds(17.0 / 30.0), 177.0, 1739.0),
+			(TimeSpan.FromSeconds(20.0 / 30.0), 175.0, 1739.0),
+			(TimeSpan.FromSeconds(23.0 / 30.0), 169.0, 1741.0),
+			(TimeSpan.FromSeconds(26.0 / 30.0), 160.0, 1743.0),
+			(TimeSpan.FromSeconds(29.0 / 30.0), 148.0, 1746.0),
+			(TimeSpan.FromSeconds(32.0 / 30.0), 128.0, 1749.0),
+			(TimeSpan.FromSeconds(1.167), 105.0, 1751.0),
+		};
+
+		TimeSpan totalDuration = TimeSpan.FromSeconds(1.167);
+		TimeSpan? firstRenderTime = null;
+		TimeSpan? previousRenderTime = null;
+		TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		EventHandler handler = (_, args) =>
+		{
+			if (args is not RenderingEventArgs rendering || previousRenderTime == rendering.RenderingTime)
+			{
+				return;
+			}
+			previousRenderTime = rendering.RenderingTime;
+			firstRenderTime ??= rendering.RenderingTime;
+			TimeSpan elapsed = rendering.RenderingTime - firstRenderTime.Value;
+			if (elapsed > totalDuration) elapsed = totalDuration;
+			try
+			{
+				(double leftEdge, double rightEdge) = SampleRunnerEdges(runnerKeys, elapsed);
+				ApplyBladesStartupFrame(elapsed.TotalSeconds, leftEdge, rightEdge);
+				if (elapsed >= totalDuration) completion.TrySetResult();
+			}
+			catch (Exception exception)
+			{
+				completion.TrySetException(exception);
+			}
+		};
+		CompositionTarget.Rendering += handler;
+		try
+		{
+			await completion.Task;
+		}
+		finally
+		{
+			CompositionTarget.Rendering -= handler;
+		}
+	}
+
+	private void ApplyBladesStartupFrame(double seconds, double leftEdge, double rightEdge)
+	{
+		const double leftRunnerInnerEdge = 739.0;
+		const double rightRunnerInnerEdge = 1203.0;
+		BladesBootLeftRunnerTranslate.X = leftEdge - leftRunnerInnerEdge;
+		BladesBootRightRunnerTranslate.X = rightEdge - rightRunnerInnerEdge;
+
+		double centerProgress = SmoothStep((seconds - 0.36) / 0.30);
+		double greenProgress = SampleCurve(seconds, (0.000, 0.18), (0.100, 0.26), (0.200, 0.36), (0.300, 0.55), (0.400, 0.72), (0.500, 0.92), (0.567, 1.0));
+		double sideProgress = SmoothStep((seconds - 0.533) / 0.634);
+		double contentProgress = SampleCurve(seconds, (0.967, 0.0), (1.000, 0.12), (1.033, 0.36), (1.067, 0.57), (1.100, 0.83), (1.133, 1.0));
+
+		BladesCenterHost.Opacity = centerProgress;
+		BladesStartupGreenReveal.Opacity = 1.0 - greenProgress;
+		BladesArtworkHost.StartupElapsedSeconds = seconds;
+		BladesArtworkHost.StartupOpenProgress = sideProgress;
+		BladesContentCanvas.Opacity = contentProgress;
+		// Keep the curved shutters in front while the intact blades emerge.
+		// The settled runners are already covered by the stack before this fade.
+		BladesBootRunnerOverlay.Opacity = 1.0 - SmoothStep((seconds - 1.033) / 0.134);
+
+		BladesBootLeftRunnerImage.Opacity = 1.0;
+		BladesBootRightRunnerImage.Opacity = 1.0;
+		BladesBootLeftRunnerOpenImage.Opacity = 0.0;
+		BladesBootRightRunnerOpenImage.Opacity = 0.0;
+	}
+
+	private static (double LeftEdge, double RightEdge) SampleRunnerEdges(
+		(TimeSpan Time, double LeftEdge, double RightEdge)[] keys,
+		TimeSpan elapsed)
+	{
+		if (elapsed <= keys[0].Time)
+		{
+			return (keys[0].LeftEdge, keys[0].RightEdge);
+		}
+
+		for (int i = 1; i < keys.Length; i++)
+		{
+			if (elapsed <= keys[i].Time)
+			{
+				double local = (elapsed - keys[i - 1].Time).TotalSeconds / (keys[i].Time - keys[i - 1].Time).TotalSeconds;
+				return (
+					Lerp(keys[i - 1].LeftEdge, keys[i].LeftEdge, local),
+					Lerp(keys[i - 1].RightEdge, keys[i].RightEdge, local));
+			}
+		}
+
+		return (keys[^1].LeftEdge, keys[^1].RightEdge);
+	}
+
+	private static double SmoothStep(double value)
+	{
+		value = Math.Clamp(value, 0.0, 1.0);
+		return value * value * (3.0 - (2.0 * value));
+	}
+
+	private static double Lerp(double from, double to, double progress)
+	{
+		return from + ((to - from) * progress);
+	}
+
+	private static double SampleCurve(double seconds, params (double Time, double Value)[] samples)
+	{
+		if (samples.Length == 0)
+		{
+			return 0.0;
+		}
+
+		if (seconds <= samples[0].Time)
+		{
+			return samples[0].Value;
+		}
+
+		for (int i = 1; i < samples.Length; i++)
+		{
+			if (seconds <= samples[i].Time)
+			{
+				double span = samples[i].Time - samples[i - 1].Time;
+				double local = span <= 0.0 ? 1.0 : (seconds - samples[i - 1].Time) / span;
+				return Lerp(samples[i - 1].Value, samples[i].Value, local);
+			}
+		}
+
+		return samples[^1].Value;
+	}
+
+	private void ResetBladesRunnerStartup()
+	{
+		BladesBootLeftRunnerTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+		BladesBootRightRunnerTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+		BladesBootRunnerOverlay.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesStartupGreenReveal.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesCenterHost.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesContentCanvas.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesArtworkHost.BeginAnimation(UIElement.OpacityProperty, null);
+		BladesBootLeftRunnerTranslate.X = 0.0;
+		BladesBootRightRunnerTranslate.X = 0.0;
+		BladesBootLeftRunnerImage.Opacity = 1.0;
+		BladesBootRightRunnerImage.Opacity = 1.0;
+		BladesBootLeftRunnerOpenImage.Opacity = 0.0;
+		BladesBootRightRunnerOpenImage.Opacity = 0.0;
+		BladesBootRunnerOverlay.Opacity = 0.0;
+		BladesBootRunnerOverlay.Visibility = Visibility.Collapsed;
+		BladesStartupGreenReveal.Opacity = 0.0;
+		BladesStartupGreenReveal.Visibility = Visibility.Collapsed;
+		BladesCenterHost.Opacity = 1.0;
+		BladesArtworkHost.StartupElapsedSeconds = 1.167;
+		BladesArtworkHost.StartupOpenProgress = 1.0;
+		BladesArtworkHost.Opacity = 1.0;
+		BladesContentCanvas.Opacity = 1.0;
+	}
+
 	private void StartFakeLoadingRingAnimation()
 	{
 		DoubleAnimation animation = new DoubleAnimation(0.0, 360.0, TimeSpan.FromMilliseconds(760.0))
@@ -1854,6 +2272,60 @@ public partial class MainWindow : Window
 	private void StopFakeLoadingRingAnimation()
 	{
 		FakeLoadingRingRotate.BeginAnimation(RotateTransform.AngleProperty, null);
+	}
+
+	private async Task TransitionBladesSubmenuAsync(string target, Action change)
+	{
+		if (_viewModel.IsBladesMenuTransitioning) return;
+		_viewModel.IsBladesMenuTransitioning = true;
+		bool wasOpen = _viewModel.IsBladesSubmenuOpen;
+		bool opening = target.Length > 0;
+		bool enteringFromRoot = !wasOpen && opening;
+		try
+		{
+			BladesContentCanvas.IsHitTestVisible = false;
+			await AnimateDoubleAsync(BladesContentCanvas, UIElement.OpacityProperty, 1, 0, 100, null);
+			if (wasOpen != opening)
+			{
+				BladesArtworkHost.Visibility = Visibility.Visible;
+				if (opening) change();
+				await AnimateDoubleAsync(BladesArtworkHost, Controls.BladesArtworkHost.SubmenuExpansionProperty,
+					opening ? 0 : 1, opening ? 1 : 0, 300, new CubicEase { EasingMode=EasingMode.EaseOut });
+				if (!opening) change();
+			}
+			else { await Task.Delay(100); change(); }
+			if (enteringFromRoot && _viewModel.Settings.EnableFakeLoading && ShouldRunBladesSubmenuFakeLoading(target))
+			{
+				BladesLoadingTitle.Text=target=="GamesLibrary" ? "My Games" : _viewModel.ActiveBladesTitle;
+				await RunMenuFakeLoadingSequenceAsync();
+				BladesLoadingTitle.ClearValue(TextBlock.TextProperty);
+			}
+			await AnimateDoubleAsync(BladesContentCanvas, UIElement.OpacityProperty, 0, 1, 180, null);
+		}
+		catch (Exception ex) { App.LogException(ex,"Blades.SubmenuTransition"); }
+		finally
+		{
+			BladesArtworkHost.ClearValue(UIElement.VisibilityProperty);
+			BladesArtworkHost.SubmenuExpansion = _viewModel.IsBladesSubmenuOpen ? 1 : 0;
+			BladesArtworkHost.BeginAnimation(Controls.BladesArtworkHost.SubmenuExpansionProperty,null);
+			BladesContentCanvas.BeginAnimation(UIElement.OpacityProperty,null);
+			BladesContentCanvas.Opacity=1;
+			BladesContentCanvas.IsHitTestVisible=true;
+			_viewModel.IsBladesMenuTransitioning=false;
+			QueueBladesMenuFocus();
+		}
+	}
+
+	private bool ShouldRunBladesSubmenuFakeLoading(string target)
+	{
+		string kind = target switch
+		{
+			"GamesLibraryRoot" or "GamesLibrary" => "games",
+			"Achievements" => "achievements",
+			"PlayedGames" => "played-games",
+			_ => string.Empty
+		};
+		return kind.Length > 0 && ShouldRunMenuFakeLoading(kind);
 	}
 
 	private bool MaybeRunMenuFakeLoading(string propertyName)
@@ -1912,6 +2384,15 @@ public partial class MainWindow : Window
 		case "games":
 			_gamesOpenCount++;
 			return _gamesOpenCount % 4 == 0;
+		case "achievements":
+			_achievementsOpenCount++;
+			return _achievementsOpenCount % 4 == 0;
+		case "played-games":
+			_playedGamesOpenCount++;
+			return _playedGamesOpenCount % 4 == 0;
+		case "music":
+			_musicOpenCount++;
+			return _musicOpenCount % 4 == 0;
 		case "apps":
 			_appsOpenCount++;
 			return _appsOpenCount % 4 == 0;
@@ -1929,6 +2410,7 @@ public partial class MainWindow : Window
 		try
 		{
 			_isMenuFakeLoadingActive = true;
+			BladesLoadingChrome.Visibility = Visibility.Visible;
 			FakeLoadingOverlay.BeginAnimation(UIElement.OpacityProperty, null);
 			FakeLoadingIndicator.BeginAnimation(UIElement.OpacityProperty, null);
 			FakeLoadingOverlay.Visibility = Visibility.Visible;
@@ -2009,6 +2491,16 @@ public partial class MainWindow : Window
 		};
 		target.BeginAnimation(property, doubleAnimation);
 		return completion.Task;
+	}
+
+	private static async Task DelayedAnimateDoubleAsync(IAnimatable target, DependencyProperty property, double from, double to, int milliseconds, IEasingFunction? easing, int delayMilliseconds)
+	{
+		if (delayMilliseconds > 0)
+		{
+			await Task.Delay(delayMilliseconds);
+		}
+
+		await AnimateDoubleAsync(target, property, from, to, milliseconds, easing);
 	}
 
 	private void MusicFullscreenHint_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -2146,12 +2638,30 @@ public partial class MainWindow : Window
 
 	private void ViewModel_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
+		if (e.PropertyName == "IsBladesSubmenuOpen" && !_viewModel.IsBladesSubmenuOpen && !_viewModel.IsBladesMenuTransitioning)
+		{
+			BladesArtworkHost.BeginAnimation(Controls.BladesArtworkHost.SubmenuExpansionProperty,null);
+			BladesArtworkHost.SubmenuExpansion=0;
+		}
 		if (e.PropertyName == "CurrentTab")
 		{
 			AnimateTabChange();
 			UpdateThemeBackgroundVisual();
 			UpdateBingBackgroundVisual();
 			QueueFocusFirstButton();
+			return;
+		}
+		if (e.PropertyName == "SelectedBladesMenuIndex" || e.PropertyName == "ActiveBladesMenuIndex" || e.PropertyName == "ActiveBladesMenuItems")
+		{
+			if (!_viewModel.IsBladesAchievementsSubmenu)
+			{
+				QueueBladesMenuFocus();
+			}
+			return;
+		}
+		if (e.PropertyName == "IsBladesAchievementsSubmenu" || e.PropertyName == "IsBladesAchievementListFocused" || e.PropertyName == "SelectedBladesAchievementGameIndex" || e.PropertyName == "SelectedBladesAchievementIndex" || e.PropertyName == "BladesAchievementGameItems" || e.PropertyName == "BladesAchievementItems")
+		{
+			QueueBladesAchievementsFocus();
 			return;
 		}
 		if (e.PropertyName == "IsYouTubeTvOpen")
@@ -2998,6 +3508,10 @@ public partial class MainWindow : Window
 		{
 			TryFocus(FindFocusableControl((DependencyObject?)(object)MusicPlayerOverlay));
 		}
+		else if (_viewModel.IsBladesDashboardStyle)
+		{
+			TryFocusBladesMenuButton();
+		}
 		else
 		{
 			List<FocusCandidate> dashboardFocusCandidates = GetDashboardFocusCandidates();
@@ -3267,6 +3781,79 @@ public partial class MainWindow : Window
 				}
 			}
 			_lastFocusedButtonByTab[_viewModel.CurrentTab.Key] = value;
+		}
+	}
+
+	private void QueueBladesMenuFocus()
+	{
+		((DispatcherObject)this).Dispatcher.BeginInvoke((Delegate)(Action)delegate
+		{
+			TryFocusBladesMenuButton();
+		}, (DispatcherPriority)6, Array.Empty<object>());
+	}
+
+	private void QueueBladesAchievementsFocus()
+	{
+		((DispatcherObject)this).Dispatcher.BeginInvoke((Delegate)(Action)delegate
+		{
+			TryFocusBladesAchievementsPane();
+		}, (DispatcherPriority)6, Array.Empty<object>());
+	}
+
+	private bool TryFocusBladesAchievementsPane()
+	{
+		try
+		{
+			if (!_viewModel.IsBladesAchievementsSubmenu)
+			{
+				return false;
+			}
+			if (_viewModel.IsBladesAchievementListFocused)
+			{
+				if (_viewModel.SelectedBladesAchievementIndex >= 0 && _viewModel.SelectedBladesAchievementIndex < BladesAchievementListBox.Items.Count)
+				{
+					BladesAchievementListBox.ScrollIntoView(BladesAchievementListBox.Items[_viewModel.SelectedBladesAchievementIndex]);
+				}
+				BladesAchievementListBox.UpdateLayout();
+				return TryFocus(BladesAchievementListBox);
+			}
+			if (_viewModel.SelectedBladesAchievementGameIndex >= 0 && _viewModel.SelectedBladesAchievementGameIndex < BladesAchievementGameListBox.Items.Count)
+			{
+				BladesAchievementGameListBox.ScrollIntoView(BladesAchievementGameListBox.Items[_viewModel.SelectedBladesAchievementGameIndex]);
+			}
+			BladesAchievementGameListBox.UpdateLayout();
+			return TryFocus(BladesAchievementGameListBox);
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.TryFocusBladesAchievementsPane");
+			return false;
+		}
+	}
+
+	private void BladesTrayClick(object sender, RoutedEventArgs e) => _viewModel.ActivateBladesTray();
+
+	private bool TryFocusBladesMenuButton()
+	{
+		try
+		{
+			if (_viewModel.IsBladesTraySelected && !_viewModel.IsBladesSubmenuOpen) return TryFocus(BladesTrayButton);
+			List<System.Windows.Controls.Button> buttons = FindVisualChildren<System.Windows.Controls.Button>((DependencyObject?)(object)BladesDashboardOverlay)
+				.Where((System.Windows.Controls.Button button) => button.IsVisible && string.Equals(button.Tag as string, "BladesMenuOption", StringComparison.OrdinalIgnoreCase))
+				.ToList();
+			if (buttons.Count == 0)
+			{
+				return false;
+			}
+			int index = Math.Clamp(_viewModel.ActiveBladesMenuIndex, 0, buttons.Count - 1);
+			var selected=buttons.FirstOrDefault(button => button.DataContext is BladesMenuItemViewModel item && item.IsSelected) ?? buttons[index];
+			selected.BringIntoView();
+			return TryFocus(selected);
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.TryFocusBladesMenuButton");
+			return false;
 		}
 	}
 
@@ -3905,6 +4492,7 @@ public partial class MainWindow : Window
 			{
 				return;
 			}
+			ScrollAppLibraryTileIntoView(tile);
 			System.Windows.Controls.Button element = GetAppLibraryTileButtonForItem(tile);
 			if (TryFocus(element))
 			{
@@ -3927,6 +4515,50 @@ public partial class MainWindow : Window
 				return null;
 			}
 			return FindVisualChildren<System.Windows.Controls.Button>(container).FirstOrDefault((System.Windows.Controls.Button button) => button.CommandParameter == tile);
+		}
+
+		private void MyAppsScrollViewer_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			if (sender is ScrollViewer scrollViewer)
+			{
+				scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+				e.Handled = true;
+			}
+		}
+
+		private void AppLibraryTile_OnMouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+		{
+			if (sender is System.Windows.Controls.Button { CommandParameter: AppLibraryTileViewModel tile })
+			{
+				_viewModel.SelectedAppLibraryTile = tile;
+				ScrollAppLibraryTileIntoView(tile);
+			}
+		}
+
+		private void ScrollAppLibraryTileIntoView(AppLibraryTileViewModel tile)
+		{
+			try
+			{
+				if (MyAppsScrollViewer == null)
+				{
+					return;
+				}
+				double viewportLeft = MyAppsScrollViewer.HorizontalOffset;
+				double viewportRight = viewportLeft + MyAppsScrollViewer.ViewportWidth;
+				const double margin = 26.0;
+				if (tile.Left < viewportLeft + margin)
+				{
+					MyAppsScrollViewer.ScrollToHorizontalOffset(Math.Max(0.0, tile.Left - margin));
+				}
+				else if (tile.Right > viewportRight - margin)
+				{
+					MyAppsScrollViewer.ScrollToHorizontalOffset(tile.Right - MyAppsScrollViewer.ViewportWidth + margin);
+				}
+			}
+			catch (Exception exception)
+			{
+				App.LogException(exception, "MainWindow.ScrollAppLibraryTileIntoView");
+			}
 		}
 
 		private List<OverlayFocusCandidate> GetLibraryGameButtons()

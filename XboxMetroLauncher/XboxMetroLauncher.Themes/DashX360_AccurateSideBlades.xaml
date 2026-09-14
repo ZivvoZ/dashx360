@@ -1,0 +1,104 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style x:Key="SideBladeArtwork" TargetType="Image">
+    <Setter Property="Width" Value="1920" />
+    <Setter Property="Height" Value="1080" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+  </Style>
+
+  <Style x:Key="StateBladeLabel" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="Convection, Xbox 360, Segoe UI" />
+    <Setter Property="FontSize" Value="38" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontStretch" Value="Normal" />
+    <Setter Property="Foreground" Value="#D22E3335" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+    <Setter Property="TextWrapping" Value="NoWrap" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+    <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
+    <Setter Property="UseLayoutRounding" Value="True" />
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <RotateTransform Angle="90" />
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <DataTemplate x:Key="MarketplaceAccurateSideBladesTemplate">
+    <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False">
+      <Image Style="{StaticResource SideBladeArtwork}"
+             Source="pack://siteoforigin:,,,/Assets/Blades/StatePngs/marketplace-blades.png" />
+      <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="10">
+        <TextBlock Text="marketplace" Style="{StaticResource StateBladeLabel}" Width="520" Height="68" Canvas.Left="-115" Canvas.Top="286" />
+        <TextBlock Text="xbox live" Style="{StaticResource StateBladeLabel}" Width="400" Height="68" Canvas.Left="1315" Canvas.Top="260" />
+        <TextBlock Text="games" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="1428" Canvas.Top="258" />
+        <TextBlock Text="media" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="1503" Canvas.Top="258" />
+        <TextBlock Text="system" Style="{StaticResource StateBladeLabel}" Width="330" Height="68" Canvas.Left="1570" Canvas.Top="256" />
+      </Canvas>
+    </Canvas>
+  </DataTemplate>
+
+  <DataTemplate x:Key="XboxLIVEAccurateSideBladesTemplate">
+    <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False">
+      <Image Style="{StaticResource SideBladeArtwork}"
+             Source="pack://siteoforigin:,,,/Assets/Blades/StatePngs/xbox-live-blades.png" />
+      <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="10">
+        <TextBlock Text="marketplace" Style="{StaticResource StateBladeLabel}" Width="520" Height="68" Canvas.Left="-113" Canvas.Top="286" />
+        <TextBlock Text="xbox live" Style="{StaticResource StateBladeLabel}" Width="400" Height="68" Canvas.Left="30" Canvas.Top="246" />
+        <TextBlock Text="games" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="1428" Canvas.Top="258" />
+        <TextBlock Text="media" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="1503" Canvas.Top="258" />
+        <TextBlock Text="system" Style="{StaticResource StateBladeLabel}" Width="330" Height="68" Canvas.Left="1570" Canvas.Top="256" />
+      </Canvas>
+    </Canvas>
+  </DataTemplate>
+
+  <DataTemplate x:Key="GamesAccurateSideBladesTemplate">
+    <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False">
+      <Image Style="{StaticResource SideBladeArtwork}"
+             Source="pack://siteoforigin:,,,/Assets/Blades/StatePngs/games-blades.png" />
+      <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="10">
+        <TextBlock Text="marketplace" Style="{StaticResource StateBladeLabel}" Width="520" Height="68" Canvas.Left="-113" Canvas.Top="286" />
+        <TextBlock Text="xbox live" Style="{StaticResource StateBladeLabel}" Width="400" Height="68" Canvas.Left="32" Canvas.Top="268" />
+        <TextBlock Text="games" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="134" Canvas.Top="246" />
+        <TextBlock Text="media" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="1503" Canvas.Top="258" />
+        <TextBlock Text="system" Style="{StaticResource StateBladeLabel}" Width="330" Height="68" Canvas.Left="1570" Canvas.Top="256" />
+      </Canvas>
+    </Canvas>
+  </DataTemplate>
+
+  <DataTemplate x:Key="MediaAccurateSideBladesTemplate">
+    <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False">
+      <Image Style="{StaticResource SideBladeArtwork}"
+             Source="pack://siteoforigin:,,,/Assets/Blades/StatePngs/media-blades.png" />
+      <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="10">
+        <TextBlock Text="marketplace" Style="{StaticResource StateBladeLabel}" Width="520" Height="68" Canvas.Left="-113" Canvas.Top="286" />
+        <TextBlock Text="xbox live" Style="{StaticResource StateBladeLabel}" Width="400" Height="68" Canvas.Left="32" Canvas.Top="268" />
+        <TextBlock Text="games" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="144" Canvas.Top="252" />
+        <TextBlock Text="media" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="198" Canvas.Top="244" />
+        <TextBlock Text="system" Style="{StaticResource StateBladeLabel}" Width="330" Height="68" Canvas.Left="1570" Canvas.Top="256" />
+      </Canvas>
+    </Canvas>
+  </DataTemplate>
+
+  <DataTemplate x:Key="SystemAccurateSideBladesTemplate">
+    <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False">
+      <Image Style="{StaticResource SideBladeArtwork}"
+             Source="pack://siteoforigin:,,,/Assets/Blades/StatePngs/system-blades.png" />
+      <Canvas Width="1920" Height="1080" ClipToBounds="False" IsHitTestVisible="False" Panel.ZIndex="10">
+        <TextBlock Text="marketplace" Style="{StaticResource StateBladeLabel}" Width="520" Height="68" Canvas.Left="-113" Canvas.Top="286" />
+        <TextBlock Text="xbox live" Style="{StaticResource StateBladeLabel}" Width="400" Height="68" Canvas.Left="32" Canvas.Top="268" />
+        <TextBlock Text="games" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="144" Canvas.Top="252" />
+        <TextBlock Text="media" Style="{StaticResource StateBladeLabel}" Width="315" Height="68" Canvas.Left="217" Canvas.Top="246" />
+        <TextBlock Text="system" Style="{StaticResource StateBladeLabel}" Width="330" Height="68" Canvas.Left="265" Canvas.Top="240" />
+      </Canvas>
+    </Canvas>
+  </DataTemplate>
+</ResourceDictionary>

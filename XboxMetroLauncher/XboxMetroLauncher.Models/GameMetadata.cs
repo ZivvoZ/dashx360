@@ -46,6 +46,8 @@ public sealed class GameMetadata
 
 	public string CoOpInfo { get; set; } = string.Empty;
 
+	public string StoreDescription { get; set; } = string.Empty;
+
 	public double ReviewStarRating { get; set; }
 
 	public int ReviewCount { get; set; }

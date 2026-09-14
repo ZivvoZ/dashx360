@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using XboxMetroLauncher.Utilities;
 
 namespace XboxMetroLauncher.Services;
 
 internal static class ProfileImagePool
 {
-	private static readonly string[] PoolFileNames = new string[8] { "2000c.png", "20002.png", "20003.png", "20006.png", "20007.png", "20008.png", "20009.png", "2000a.png" };
+	private static readonly HashSet<string> SupportedImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+	{
+		".png",
+		".jpg",
+		".jpeg",
+		".bmp",
+		".gif"
+	};
 
 	private static readonly object SyncRoot = new object();
 
@@ -30,12 +38,7 @@ internal static class ProfileImagePool
 
 	public static bool NeedsAssignedPoolImage(string? currentPath)
 	{
-		if (string.IsNullOrWhiteSpace(currentPath))
-		{
-			return true;
-		}
-		string path = AppPaths.ResolvePath(currentPath);
-		if (!File.Exists(path))
+		if (!TryResolveExistingAvatarPath(currentPath, out string path))
 		{
 			return true;
 		}
@@ -50,9 +53,9 @@ internal static class ProfileImagePool
 
 	public static string ResolveAssignedAvatarPath(string? currentPath)
 	{
-		if (!NeedsAssignedPoolImage(currentPath))
+		if (!NeedsAssignedPoolImage(currentPath) && TryResolveExistingAvatarPath(currentPath, out string path))
 		{
-			return AppPaths.ResolvePath(currentPath);
+			return path;
 		}
 		return GetRandomPoolAvatarPath();
 	}
@@ -73,16 +76,39 @@ internal static class ProfileImagePool
 	private static List<string> GetAvailablePoolPaths()
 	{
 		string path = AppPaths.FindFolder(Path.Combine("Assets", "Profile", "FriendPool"));
-		List<string> list = new List<string>();
-		string[] poolFileNames = PoolFileNames;
-		foreach (string path2 in poolFileNames)
+		if (!Directory.Exists(path))
 		{
-			string text = Path.Combine(path, path2);
-			if (File.Exists(text))
+			return new List<string>();
+		}
+		return Directory.EnumerateFiles(path)
+			.Where(file => SupportedImageExtensions.Contains(Path.GetExtension(file)))
+			.OrderBy(file => Path.GetFileName(file), StringComparer.OrdinalIgnoreCase)
+			.ToList();
+	}
+
+	private static bool TryResolveExistingAvatarPath(string? currentPath, out string path)
+	{
+		path = string.Empty;
+		if (string.IsNullOrWhiteSpace(currentPath))
+		{
+			return false;
+		}
+		string resolved = AppPaths.ResolvePath(currentPath);
+		if (File.Exists(resolved))
+		{
+			path = resolved;
+			return true;
+		}
+		string fileName = Path.GetFileName(currentPath);
+		if (!string.IsNullOrWhiteSpace(fileName))
+		{
+			string poolPath = Path.Combine(AppPaths.FindFolder(Path.Combine("Assets", "Profile", "FriendPool")), fileName);
+			if (File.Exists(poolPath))
 			{
-				list.Add(text);
+				path = poolPath;
+				return true;
 			}
 		}
-		return list;
+		return false;
 	}
 }

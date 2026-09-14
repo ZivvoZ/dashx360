@@ -15,6 +15,8 @@ public sealed class SteamGameDetails
 
 	public string CoOpInfo { get; set; } = string.Empty;
 
+	public string StoreDescription { get; set; } = string.Empty;
+
 	public string StoreScreenshotPath { get; set; } = string.Empty;
 
 	public double ReviewStarRating { get; set; }

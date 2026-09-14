@@ -23,6 +23,19 @@ public sealed class AppSettings : ObservableObject
 
 	private string _displayResolution = "16:9";
 
+	private string _dashboardStyle = "Metro";
+	private string _xboxGuide = "Metro";
+
+	public string XboxGuide
+	{
+		get => _xboxGuide;
+		set => SetProperty(ref _xboxGuide, value == "Blades" || value == "Blades BETA" ? "Blades" : "Metro", nameof(XboxGuide));
+	}
+
+	private string _dashboardSounds = "Metro";
+
+	private string _dashboardStartup = "Metro";
+
 	private string _openTrayGameId = string.Empty;
 
 	private string _gameCoverFitMode = "Auto";
@@ -166,6 +179,42 @@ public sealed class AppSettings : ObservableObject
 		set
 		{
 			SetProperty(ref _displayResolution, value, "DisplayResolution");
+		}
+	}
+
+	public string DashboardStyle
+	{
+		get
+		{
+			return _dashboardStyle;
+		}
+		set
+		{
+			SetProperty(ref _dashboardStyle, value, "DashboardStyle");
+		}
+	}
+
+	public string DashboardSounds
+	{
+		get
+		{
+			return _dashboardSounds;
+		}
+		set
+		{
+			SetProperty(ref _dashboardSounds, value, "DashboardSounds");
+		}
+	}
+
+	public string DashboardStartup
+	{
+		get
+		{
+			return _dashboardStartup;
+		}
+		set
+		{
+			SetProperty(ref _dashboardStartup, value, "DashboardStartup");
 		}
 	}
 

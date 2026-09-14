@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -92,6 +93,8 @@ public sealed class DashboardViewModel : ObservableObject
 
 	private readonly DispatcherTimer _dashPartyInviteTimer;
 
+	private readonly DispatcherTimer _profileSaveTimer;
+
 	private readonly List<System.Windows.Media.Brush> _accentBrushes;
 
 	private GameLibrary _library = new GameLibrary();
@@ -107,6 +110,8 @@ public sealed class DashboardViewModel : ObservableObject
 	private GameCardViewModel? _featuredGame;
 
 	private Profile _profile = new Profile();
+
+	private bool _suppressProfileAutosave;
 
 	private AppSettings _settings = new AppSettings();
 
@@ -175,6 +180,26 @@ public sealed class DashboardViewModel : ObservableObject
 	private int _topRightFriendCount;
 
 	private int _topRightState;
+
+	private int _selectedBladesBladeIndex = 1;
+
+	private int _selectedBladesMenuIndex;
+
+	private string _bladesSubmenuKey = string.Empty;
+
+	private int _selectedBladesSubmenuIndex;
+
+	private int _selectedBladesGameLibraryCategoryIndex = 1;
+
+	private int _selectedBladesAchievementGameIndex;
+
+	private int _selectedBladesAchievementIndex;
+
+	private bool _isBladesAchievementListFocused;
+
+	private readonly ObservableCollection<BladesAchievementGameViewModel> _bladesAchievementGameItems = new ObservableCollection<BladesAchievementGameViewModel>();
+
+	private readonly ObservableCollection<BladesAchievementItemViewModel> _bladesAchievementItems = new ObservableCollection<BladesAchievementItemViewModel>();
 
 	private string _musicPositionText = "0:00";
 
@@ -328,6 +353,20 @@ public sealed class DashboardViewModel : ObservableObject
 
 	public IReadOnlyList<string> ResolutionOptions { get; } = new _003C_003Ez__ReadOnlyArray<string>(new string[2] { "16:9", "21:9" });
 
+	public IReadOnlyList<string> DashboardStyleOptions { get; } = new _003C_003Ez__ReadOnlyArray<string>(new string[2] { "Metro", "Blades" });
+	public IReadOnlyList<string> XboxGuideOptions { get; } = new[] { "Metro", "Blades" };
+
+	// Reuse the catalogue and playback without opening the dashboard overlay.
+	public void OpenBladesGuideMusicSources()
+	{
+		EnsureMusicLibraryLoaded();
+		OpenMusicSourceBrowser();
+	}
+
+	public IReadOnlyList<string> DashboardSoundOptions { get; } = new _003C_003Ez__ReadOnlyArray<string>(new string[2] { "Metro", "Blades" });
+
+	public IReadOnlyList<string> DashboardStartupOptions { get; } = new _003C_003Ez__ReadOnlyArray<string>(new string[2] { "Metro", "Blades" });
+
 	public double DashboardAspectFrameWidth
 	{
 		get
@@ -357,6 +396,13 @@ public sealed class DashboardViewModel : ObservableObject
 		Settings.DisplayResolution = NormalizeDisplayAspectRatio(Settings.DisplayResolution);
 		OnPropertyChanged("DashboardAspectFrameWidth");
 		OnPropertyChanged("DashboardAspectFrameHeight");
+	}
+
+	public void RefreshDashboardStyleBindings()
+	{
+		Settings.DashboardStyle = NormalizeDashboardStyle(Settings.DashboardStyle);
+		OnPropertyChanged("IsBladesDashboardStyle");
+		OnPropertyChanged("CurrentThemeBackgroundPath");
 	}
 
 	public IReadOnlyList<string> GameCoverFitOptions { get; } = new _003C_003Ez__ReadOnlyArray<string>(new string[4] { "Auto", "Cover", "Fill", "Fit" });
@@ -550,6 +596,8 @@ public sealed class DashboardViewModel : ObservableObject
 			OnPropertyChanged("CurrentReferenceImageOpacity");
 			OnPropertyChanged("UseLightDashboardChrome");
 			OnPropertyChanged("CurrentThemeBackgroundPath");
+			CloseBladesSubmenu(playSound: false);
+			ResetBladesMenuSelection();
 		}
 	}
 
@@ -638,6 +686,288 @@ public sealed class DashboardViewModel : ObservableObject
 
 	public bool UseLightDashboardChrome => false;
 
+	public bool IsBladesDashboardStyle => string.Equals(Settings.DashboardStyle, "Blades", StringComparison.OrdinalIgnoreCase);
+
+	public IReadOnlyList<BladesBladeViewModel> BladesBlades => BuildBladesBlades();
+
+	public BladesBladeViewModel? ActiveBladesBlade
+	{
+		get
+		{
+			IReadOnlyList<BladesBladeViewModel> blades = BladesBlades;
+			if (blades.Count == 0)
+			{
+				return null;
+			}
+			return blades[Math.Clamp(_selectedBladesBladeIndex, 0, blades.Count - 1)];
+		}
+	}
+
+	public IReadOnlyList<BladesBladeViewModel> LeftBlades
+	{
+		get
+		{
+			IReadOnlyList<BladesBladeViewModel> blades = BladesBlades;
+			int count = Math.Clamp(_selectedBladesBladeIndex, 0, blades.Count);
+			return blades.Take(count).ToArray();
+		}
+	}
+
+	public IReadOnlyList<BladesBladeViewModel> RightBlades
+	{
+		get
+		{
+			IReadOnlyList<BladesBladeViewModel> blades = BladesBlades;
+			int startIndex = Math.Clamp(_selectedBladesBladeIndex + 1, 0, blades.Count);
+			return blades.Skip(startIndex).ToArray();
+		}
+	}
+
+	public System.Windows.Media.Brush ActiveBladesAccentBrush => ActiveBladesBlade?.AccentBrush ?? new SolidColorBrush(System.Windows.Media.Color.FromRgb(48, 148, 74));
+
+	public System.Windows.Media.Brush BladesOverlayAccentBrush
+	{
+		get
+		{
+			if (IsBladesDashboardStyle && IsLauncherSettingsOpen)
+			{
+				return new SolidColorBrush(System.Windows.Media.Color.FromRgb(102, 54, 168));
+			}
+			if (IsBladesDashboardStyle && IsMusicPlayerOpen)
+			{
+				return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 104, 168));
+			}
+			return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 138, 0));
+		}
+	}
+
+	public int SelectedBladesMenuIndex
+	{
+		get
+		{
+			return _selectedBladesMenuIndex;
+		}
+		set
+		{
+			if (SetProperty(ref _selectedBladesMenuIndex, value, "SelectedBladesMenuIndex"))
+			{
+				IsBladesTraySelected=false;
+				OnPropertyChanged("SelectedBladesMenuItem");
+				NotifyActiveBladesMenuChanged();
+			}
+		}
+	}
+
+	public BladesMenuItemViewModel? SelectedBladesMenuItem
+	{
+		get
+		{
+			IReadOnlyList<BladesMenuItemViewModel> bladesMenuItems = ActiveBladesMenuItems;
+			if (bladesMenuItems == null || bladesMenuItems.Count == 0)
+			{
+				return null;
+			}
+			return bladesMenuItems[Math.Clamp(ActiveBladesMenuIndex, 0, bladesMenuItems.Count - 1)];
+		}
+	}
+
+	public bool IsBladesSubmenuOpen => !string.IsNullOrWhiteSpace(_bladesSubmenuKey);
+
+	public bool IsBladesGamesLibraryRootSubmenu => string.Equals(_bladesSubmenuKey, "GamesLibraryRoot", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsBladesGameLibrarySubmenu => string.Equals(_bladesSubmenuKey, "GamesLibrary", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(_bladesSubmenuKey, "PlayedGames", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsBladesAchievementsSubmenu => string.Equals(_bladesSubmenuKey, "Achievements", StringComparison.OrdinalIgnoreCase);
+
+	public string BladesGameLibraryTab0Foreground => GetBladesGameLibraryTabForeground(0);
+
+	public string BladesGameLibraryTab1Foreground => GetBladesGameLibraryTabForeground(1);
+
+	public string BladesGameLibraryTab2Foreground => GetBladesGameLibraryTabForeground(2);
+
+	public string BladesGameLibraryTab3Foreground => GetBladesGameLibraryTabForeground(3);
+
+	public string BladesGameLibraryTab4Foreground => GetBladesGameLibraryTabForeground(4);
+
+	public ObservableCollection<BladesAchievementGameViewModel> BladesAchievementGameItems => _bladesAchievementGameItems;
+
+	public ObservableCollection<BladesAchievementItemViewModel> BladesAchievementItems => _bladesAchievementItems;
+
+	public int SelectedBladesAchievementGameIndex
+	{
+		get
+		{
+			return _selectedBladesAchievementGameIndex;
+		}
+		set
+		{
+			int count = Math.Max(1, BladesAchievementGameItems.Count);
+			int clampedValue = Math.Clamp(value, 0, count - 1);
+			if (SetProperty(ref _selectedBladesAchievementGameIndex, clampedValue, "SelectedBladesAchievementGameIndex"))
+			{
+				_selectedBladesAchievementIndex = 0;
+				RefreshBladesAchievementItems();
+				OnPropertyChanged("SelectedBladesAchievementIndex");
+				NotifyBladesAchievementsChanged();
+			}
+		}
+	}
+
+	public int SelectedBladesAchievementIndex
+	{
+		get
+		{
+			return _selectedBladesAchievementIndex;
+		}
+		set
+		{
+			int count = Math.Max(1, BladesAchievementItems.Count);
+			int clampedValue = Math.Clamp(value, 0, count - 1);
+			if (SetProperty(ref _selectedBladesAchievementIndex, clampedValue, "SelectedBladesAchievementIndex"))
+			{
+				NotifyBladesAchievementsChanged();
+			}
+		}
+	}
+
+	public bool IsBladesAchievementListFocused
+	{
+		get
+		{
+			return _isBladesAchievementListFocused;
+		}
+		set
+		{
+			if (SetProperty(ref _isBladesAchievementListFocused, value, "IsBladesAchievementListFocused"))
+			{
+				NotifyBladesAchievementsChanged();
+			}
+		}
+	}
+
+	public string BladesAchievementsHeaderTitle
+	{
+		get
+		{
+			if (IsBladesAchievementListFocused && SelectedBladesAchievementItem != null)
+			{
+				return SelectedBladesAchievementItem.GameTitle;
+			}
+			return SelectedBladesAchievementGame?.Title ?? "All Games";
+		}
+	}
+
+	public string BladesAchievementsHeaderCountText
+	{
+		get
+		{
+			if (IsBladesAchievementListFocused && SelectedBladesAchievementItem != null)
+			{
+				if (!string.IsNullOrWhiteSpace(SelectedBladesAchievementItem.Description))
+				{
+					return SelectedBladesAchievementItem.Description;
+				}
+				return SelectedBladesAchievementItem.Title;
+			}
+			int count = BladesAchievementItems.Count;
+			return count == 1 ? "1 achievement" : $"{count} achievements";
+		}
+	}
+
+	public string BladesAchievementsHeaderRightText
+	{
+		get
+		{
+			if (!IsBladesAchievementListFocused || _bladesAchievementItems.Count == 0)
+			{
+				return string.Empty;
+			}
+			return $"{Math.Clamp(_selectedBladesAchievementIndex + 1, 1, _bladesAchievementItems.Count)} / {_bladesAchievementItems.Count}";
+		}
+	}
+
+	public BladesAchievementGameViewModel? SelectedBladesAchievementGame
+	{
+		get
+		{
+			IReadOnlyList<BladesAchievementGameViewModel> games = _bladesAchievementGameItems;
+			if (games.Count == 0)
+			{
+				return null;
+			}
+			return games[Math.Clamp(_selectedBladesAchievementGameIndex, 0, games.Count - 1)];
+		}
+	}
+
+	public BladesAchievementItemViewModel? SelectedBladesAchievementItem
+	{
+		get
+		{
+			IReadOnlyList<BladesAchievementItemViewModel> achievements = _bladesAchievementItems;
+			if (achievements.Count == 0)
+			{
+				return null;
+			}
+			return achievements[Math.Clamp(_selectedBladesAchievementIndex, 0, achievements.Count - 1)];
+		}
+	}
+
+	public bool IsBladesStandardSubmenu => IsBladesSubmenuOpen && !IsBladesGamesLibraryRootSubmenu && !IsBladesGameLibrarySubmenu && !IsBladesAchievementsSubmenu;
+
+	public bool IsActiveBladesProfileVisible => IsActiveBladesGames || IsActiveBladesMedia;
+
+	public bool IsActiveBladesMarketplace => string.Equals(ActiveBladesBlade?.Key, "marketplace", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsActiveBladesXboxLive => string.Equals(ActiveBladesBlade?.Key, "xbox live", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsActiveBladesGames => string.Equals(ActiveBladesBlade?.Key, "games", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsActiveBladesMedia => string.Equals(ActiveBladesBlade?.Key, "media", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsActiveBladesSystem => string.Equals(ActiveBladesBlade?.Key, "system", StringComparison.OrdinalIgnoreCase);
+
+	public bool IsActiveBladesOpenTrayVisible => IsActiveBladesGames || IsActiveBladesMedia || IsActiveBladesXboxLive;
+
+	public bool IsActiveBladesGenericMenuVisible => IsActiveBladesGames || IsActiveBladesMedia || IsActiveBladesSystem;
+
+	public string ActiveBladesTitle
+	{
+		get
+		{
+			if (!IsBladesSubmenuOpen)
+			{
+				return ActiveBladesBlade?.Title ?? string.Empty;
+			}
+			return _bladesSubmenuKey switch
+			{
+				"GamesLibrary" => "Games Library",
+				"GamesLibraryRoot" => "Games Library",
+				"Achievements" => "Achievements",
+				"PlayedGames" => "Played Games",
+				"MusicSources" => "Music Sources",
+				"HardDrive" => "Hard Drive",
+				"Apps" => "My Apps",
+				"Profile" => "Profile",
+				"InsideXbox" => "Inside Xbox",
+				"ConsoleSettings" => "Console Settings",
+				"DashboardCustomization" => "Dashboard Customization",
+				"GamesSetup" => "Games Setup",
+				"Audio" => "Audio",
+				"DataControl" => "Data Control",
+				_ => ActiveBladesBlade?.Title ?? string.Empty
+			};
+		}
+	}
+
+	public IReadOnlyList<BladesMenuItemViewModel> ActiveBladesMenuItems => MarkSelectedBladesItem(IsBladesSubmenuOpen ? BuildBladesSubmenuItems() : (ActiveBladesBlade?.MenuItems ?? Array.Empty<BladesMenuItemViewModel>()), IsBladesTraySelected && !IsBladesSubmenuOpen ? -1 : ActiveBladesMenuIndex);
+
+	public IReadOnlyList<BladesMenuItemViewModel> BladesGameLibraryVisibleMenuItems => BuildBladesGameLibraryVisibleMenuItems();
+
+	public int ActiveBladesMenuIndex => IsBladesSubmenuOpen ? _selectedBladesSubmenuIndex : SelectedBladesMenuIndex;
+
+	public BladesMenuItemViewModel? ActiveBladesSelectedItem => SelectedBladesMenuItem;
+
 	public GameCardViewModel? SelectedGame
 	{
 		get
@@ -697,8 +1027,20 @@ public sealed class DashboardViewModel : ObservableObject
 		}
 		set
 		{
+			if (ReferenceEquals(_profile, value))
+			{
+				return;
+			}
+			if (_profile != null)
+			{
+				_profile.PropertyChanged -= Profile_OnPropertyChanged;
+			}
 			if (SetProperty(ref _profile, value, "Profile"))
 			{
+				if (_profile != null)
+				{
+					_profile.PropertyChanged += Profile_OnPropertyChanged;
+				}
 				RefreshEditableProfileFields();
 			}
 		}
@@ -804,6 +1146,9 @@ public sealed class DashboardViewModel : ObservableObject
 			value.GameCoverFitMode = NormalizeGameCoverFitMode(value.GameCoverFitMode);
 			value.DefaultAddDestination = NormalizeAddDestination(value.DefaultAddDestination);
 			value.DisplayResolution = NormalizeDisplayAspectRatio(value.DisplayResolution);
+			value.DashboardStyle = NormalizeDashboardStyle(value.DashboardStyle);
+			value.DashboardSounds = NormalizeDashboardThemeChoice(value.DashboardSounds);
+			value.DashboardStartup = NormalizeDashboardThemeChoice(value.DashboardStartup);
 			value.AudioOutputDeviceName = (string.IsNullOrWhiteSpace(value.AudioOutputDeviceName) ? "Default" : value.AudioOutputDeviceName);
 			value.DashboardVolume = Math.Clamp(value.DashboardVolume, 0.0, 1.0);
 			value.SocialIntegrationMode = NormalizeSocialIntegrationMode(value.SocialIntegrationMode);
@@ -819,6 +1164,9 @@ public sealed class DashboardViewModel : ObservableObject
 				ApplyDashboardTileColorToSliders(value.DashboardTileColor);
 				OnPropertyChanged("OpenTrayTitle");
 				OnPropertyChanged("ResolutionOptions");
+				OnPropertyChanged("DashboardStyleOptions");
+				OnPropertyChanged("DashboardSoundOptions");
+				OnPropertyChanged("DashboardStartupOptions");
 				OnPropertyChanged("DashboardAspectFrameWidth");
 				OnPropertyChanged("DashboardAspectFrameHeight");
 				OnPropertyChanged("GameCoverFitMode");
@@ -832,6 +1180,7 @@ public sealed class DashboardViewModel : ObservableObject
 				OnPropertyChanged("DashboardVolumeText");
 				OnPropertyChanged("SocialIntegrationModeDisplay");
 				OnPropertyChanged("CurrentThemeBackgroundPath");
+				OnPropertyChanged("IsBladesDashboardStyle");
 				OnPropertyChanged("DashboardTileBrush");
 				OnPropertyChanged("DashboardTileColorPreviewBrush");
 				RefreshDashboardTileBindings();
@@ -1255,6 +1604,7 @@ public sealed class DashboardViewModel : ObservableObject
 		{
 			if (SetProperty(ref _isLauncherSettingsOpen, value, "IsLauncherSettingsOpen"))
 			{
+				OnPropertyChanged("BladesOverlayAccentBrush");
 				OnPropertyChanged("IsDashboardContentHidden");
 				OnPropertyChanged("CurrentThemeBackgroundPath");
 			}
@@ -1342,6 +1692,7 @@ public sealed class DashboardViewModel : ObservableObject
 			if (SetProperty(ref _isMusicPlayerOpen, value, "IsMusicPlayerOpen"))
 			{
 				EnsureAudioAnalysisState();
+				OnPropertyChanged("BladesOverlayAccentBrush");
 				OnPropertyChanged("CurrentThemeBackgroundPath");
 			}
 		}
@@ -1792,6 +2143,10 @@ public sealed class DashboardViewModel : ObservableObject
 	{
 		get
 		{
+			if (IsBladesDashboardStyle)
+			{
+				return string.Empty;
+			}
 			string text = ResolveThemeSectionKey();
 			if (SelectedTheme == null || SelectedTheme.IsBuiltIn || string.IsNullOrWhiteSpace(text))
 			{
@@ -2123,6 +2478,19 @@ public sealed class DashboardViewModel : ObservableObject
 
 	public string SelectedAppLibraryTileTitle => SelectedAppLibraryTile?.Title ?? string.Empty;
 
+	public double AppLibraryCanvasWidth
+	{
+		get
+		{
+			if (AppLibraryTiles.Count == 0)
+			{
+				return 1070.0;
+			}
+			double right = AppLibraryTiles.Max(tile => tile.Left + tile.Width + 18.0);
+			return Math.Max(1070.0, right);
+		}
+	}
+
 	public AppLibraryTileViewModel? SelectedAppLibraryTile
 	{
 		get
@@ -2221,6 +2589,10 @@ public sealed class DashboardViewModel : ObservableObject
 	public ICommand UseTrendingSearchCommand { get; }
 
 	public ICommand OpenSearchCommand { get; }
+
+	public ICommand OpenBladesMenuItemCommand { get; }
+
+	public ICommand SwitchBladesBladeCommand { get; }
 
 	public ICommand CloseSearchCommand { get; }
 
@@ -2417,6 +2789,11 @@ public sealed class DashboardViewModel : ObservableObject
 	public ICommand SwitchTabCommand { get; }
 
 	public event EventHandler? FriendsOverlayRequested;
+	public event EventHandler? BladesMusicRequested;
+
+	public event EventHandler? PartyOverlayRequested;
+
+	public event EventHandler<DashboardAchievementOpenRequest>? AchievementOverlayRequested;
 
 	public event EventHandler<DashboardToastRequest>? ToastRequested;
 
@@ -2477,6 +2854,15 @@ public sealed class DashboardViewModel : ObservableObject
 			await PollDashPartyInvitesAsync();
 		};
 		_dashPartyInviteTimer.Start();
+		_profileSaveTimer = new DispatcherTimer
+		{
+			Interval = TimeSpan.FromMilliseconds(650.0)
+		};
+		_profileSaveTimer.Tick += async delegate
+		{
+			_profileSaveTimer.Stop();
+			await SaveProfileSilentlyAsync();
+		};
 		int num = 6;
 		List<System.Windows.Media.Brush> list = new List<System.Windows.Media.Brush>(num);
 		CollectionsMarshal.SetCount(list, num);
@@ -2631,6 +3017,24 @@ public sealed class DashboardViewModel : ObservableObject
 			OpenExternalUrl("https://steamid.io/lookup", "Opening SteamID lookup");
 		});
 		OpenThemeMenuCommand = new RelayCommand(OpenThemeMenu);
+		OpenBladesMenuItemCommand = new RelayCommand(delegate(object? parameter)
+		{
+			if (parameter is BladesMenuItemViewModel bladesMenuItemViewModel)
+			{
+				OpenBladesMenuItem(bladesMenuItemViewModel.Key);
+				return;
+			}
+			OpenBladesMenuItem(parameter as string);
+		});
+		SwitchBladesBladeCommand = new RelayCommand(delegate(object? parameter)
+		{
+			if (parameter is BladesBladeViewModel bladesBladeViewModel)
+			{
+				SelectBladesBlade(bladesBladeViewModel.Key);
+				return;
+			}
+			SelectBladesBlade(parameter as string);
+		});
 		CloseThemeMenuCommand = new RelayCommand((Action)delegate
 		{
 			IsThemeMenuOpen = false;
@@ -2814,8 +3218,11 @@ public sealed class DashboardViewModel : ObservableObject
 			Settings = await _settingsService.LoadAsync();
 		}
 		await LoadThemesAsync();
+		_suppressProfileAutosave = true;
 		Profile = await _profileService.LoadAsync();
 		EnsureProfileDefaults();
+		_suppressProfileAutosave = false;
+		await SaveProfileSilentlyAsync();
 		Settings.ThemeName = NormalizeThemeName(Settings.ThemeName);
 		ApplySelectedTheme(Settings.ThemeName);
 		Settings.SocialIntegrationMode = SocialIntegrationMode.LocalOnly;
@@ -2942,6 +3349,13 @@ public sealed class DashboardViewModel : ObservableObject
 
 	public void HandleInput(DashboardInputAction action)
 	{
+		if (IsBladesDashboardStyle && !IsOverlayOpenForBladesInput())
+		{
+			if (HandleBladesInput(action))
+			{
+				return;
+			}
+		}
 		switch (action)
 		{
 		case DashboardInputAction.PreviousTab:
@@ -3017,9 +3431,17 @@ public sealed class DashboardViewModel : ObservableObject
 		int num2 = Math.Clamp(num + delta, 0, Tabs.Count - 1);
 		if (num2 != num)
 		{
-			_pendingTabSound = ((delta < 0) ? "page-left" : "page-right");
+			_pendingTabSound = GetTabSwitchSoundName(num, num2, delta);
 			CurrentTab = Tabs[num2];
 		}
+	}
+
+	private static string GetTabSwitchSoundName(int currentIndex, int nextIndex, int delta)
+	{
+		int transitionIndex = Math.Min(currentIndex, nextIndex);
+		return transitionIndex is >= 0 and <= 6
+			? "tab-switch-" + transitionIndex.ToString(CultureInfo.InvariantCulture)
+			: (delta < 0) ? "page-left" : "page-right";
 	}
 
 	public void MoveGameDetailsTab(int delta)
@@ -3049,6 +3471,1302 @@ public sealed class DashboardViewModel : ObservableObject
 			IsDetailsOpen = true;
 			_audioService.Play("menu-in");
 		}
+	}
+
+	public void ResetBladesMenuSelection()
+	{
+		_selectedBladesBladeIndex = ResolveBladesBladeIndexFromCurrentTab();
+		SelectedBladesMenuIndex = 0;
+		_bladesSubmenuKey = string.Empty;
+		_selectedBladesSubmenuIndex = 0;
+		NotifyActiveBladesMenuChanged();
+	}
+
+	private int ResolveBladesBladeIndexFromCurrentTab()
+	{
+		string key = CurrentTab?.Key ?? string.Empty;
+		return key switch
+		{
+			"games" => 2,
+			"video" or "music" => 3,
+			"settings" or "apps" => 4,
+			_ => 1
+		};
+	}
+
+	private IReadOnlyList<BladesBladeViewModel> BuildBladesBlades()
+	{
+		System.Windows.Media.Brush marketplaceBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 94, 12));
+		System.Windows.Media.Brush liveBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(249, 183, 27));
+		System.Windows.Media.Brush gamesBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(44, 181, 42));
+		System.Windows.Media.Brush mediaBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(34, 148, 222));
+		System.Windows.Media.Brush systemBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(143, 88, 214));
+		return new[]
+		{
+			new BladesBladeViewModel("marketplace", "Marketplace", marketplaceBrush, new[]
+			{
+				BladesItem("Spotlight", "\uE734", "Spotlight", "Featured Xbox LIVE Marketplace content.", key: "BladesNoAction"),
+				BladesItem("New Arrivals", "\uE895", "New Arrivals", "Fresh games, videos, and downloads from Xbox LIVE Marketplace.", key: "BladesNoAction"),
+				BladesItem("Game Store", "\uE7FC", "Game Store", "Browse Xbox LIVE game content.", key: "BladesNoAction"),
+				BladesItem("Video Store", "\uE714", "Video Store", "Browse video marketplace content.", key: "BladesNoAction"),
+				BladesItem("Redeem Code", "\uE8C7", "Redeem Code", "Redeem prepaid cards and marketplace codes.", key: "BladesNoAction"),
+				BladesItem("Active Downloads", "\uE896", "Active Downloads", "View active marketplace downloads.", key: "BladesNoAction"),
+				BladesItem("Account Management", "\uE77B", "Account Management", "Manage your Xbox LIVE account.", key: "BladesNoAction")
+			}, _selectedBladesBladeIndex == 0),
+			new BladesBladeViewModel("xbox live", "Xbox LIVE", liveBrush, new[]
+			{
+				BladesItem("Inside Xbox", "\uE715", "Xbox LIVE", "Games. Tournaments\nEntertainment. All the\nrewards. Endless possibilities.\nWhat are you waiting for?", key: "BladesNoAction"),
+				BladesItem("Friends", "\uE716", "Xbox LIVE", "Games. Tournaments\nEntertainment. All the\nrewards. Endless possibilities.\nWhat are you waiting for?", key: "BladesOpenFriends"),
+				BladesItem("Chat and IM", "\uE902", "Xbox LIVE", "Games. Tournaments\nEntertainment. All the\nrewards. Endless possibilities.\nWhat are you waiting for?", key: "BladesOpenParty")
+			}, _selectedBladesBladeIndex == 1),
+			new BladesBladeViewModel("games", "Games", gamesBrush, new[]
+			{
+				BladesItem("Games Library", "\uE7FC", "My Games", $"You have {Games.Count} games on your console. Select this option to play a game now.", key: "My Games"),
+				BladesItem("Achievements", "\uECA7", "Achievements", "View achievements and progress for your games.", key: "Achievements"),
+				BladesItem("Played Games", "\uE7FC", "Played Games", "View the current game's details.", key: "Played Games")
+			}, _selectedBladesBladeIndex == 2),
+			new BladesBladeViewModel("media", "Media", mediaBrush, new[]
+			{
+				BladesItem("Music", "\uE8D6", "Music", "Choose a music source and play dashboard music.", key: "Select Music"),
+				BladesItem("Pictures", "\uE91B", "Pictures", "Browse pictures and media from local folders."),
+				BladesItem("Videos", "\uE714", "Videos", "Open your video player.", key: "BladesNoAction"),
+				BladesItem("Video Store", "\uE8B2", "Video Store", "Browse video apps and marketplace content.", key: "BladesNoAction"),
+				BladesItem("Media Center", "\uE7F4", "Media Center", "Open Windows Media Player Legacy.", key: "Windows Media Center")
+			}, _selectedBladesBladeIndex == 3),
+			new BladesBladeViewModel("system", "System", systemBrush, new[]
+			{
+				BladesItem("Console Settings", "\uE115", "Console Settings", "Edit display, controller, startup, and dashboard style options."),
+				BladesItem("Family Settings", "\uE716", "Family Settings", "Manage family controls for the dashboard."),
+				BladesItem("Memory", "\uE958", "Memory", "Manage game saves, profiles, and storage."),
+				BladesItem("Network Settings", "\uE774", "Network Settings", "Configure online and local network settings."),
+				BladesItem("Computers", "\uE7F4", "Computers", "Connect to media PCs and shared libraries."),
+				BladesItem("Xbox LIVE Vision", "\uE722", "Xbox LIVE Vision", "Configure camera and vision accessories."),
+				BladesItem("Initial Setup", "\uE8B7", "Initial Setup", "Review setup options for DashX360.")
+			}, _selectedBladesBladeIndex == 4)
+		};
+	}
+
+	private bool SelectBladesBlade(string? key)
+	{
+		if (string.IsNullOrWhiteSpace(key))
+		{
+			return false;
+		}
+		IReadOnlyList<BladesBladeViewModel> blades = BladesBlades;
+		for (int i = 0; i < blades.Count; i++)
+		{
+			if (string.Equals(blades[i].Key, key, StringComparison.OrdinalIgnoreCase))
+			{
+				if (_selectedBladesBladeIndex == i && !IsBladesSubmenuOpen)
+				{
+					return true;
+				}
+				int previousIndex = _selectedBladesBladeIndex;
+				_selectedBladesBladeIndex = i;
+				SelectedBladesMenuIndex = 0;
+				_bladesSubmenuKey = string.Empty;
+				_selectedBladesSubmenuIndex = 0;
+				NotifyActiveBladesMenuChanged();
+				PlayBladesBladeSwitchSound(previousIndex, i);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private bool MoveBladesBladeSelection(int delta)
+	{
+		IReadOnlyList<BladesBladeViewModel> blades = BladesBlades;
+		if (blades.Count == 0)
+		{
+			return false;
+		}
+		int nextIndex = Math.Clamp(_selectedBladesBladeIndex + delta, 0, blades.Count - 1);
+		if (nextIndex == _selectedBladesBladeIndex)
+		{
+			return true;
+		}
+		int previousIndex = _selectedBladesBladeIndex;
+		_selectedBladesBladeIndex = nextIndex;
+		SelectedBladesMenuIndex = 0;
+		_bladesSubmenuKey = string.Empty;
+		_selectedBladesSubmenuIndex = 0;
+		NotifyActiveBladesMenuChanged();
+		PlayBladesBladeSwitchSound(previousIndex, nextIndex);
+		return true;
+	}
+
+	private void PlayBladesBladeSwitchSound(int previousIndex, int nextIndex)
+	{
+		_audioService.Play(GetBladesBladeSwitchSoundName(previousIndex, nextIndex));
+	}
+
+	private static string GetBladesBladeSwitchSoundName(int previousIndex, int nextIndex)
+	{
+		int transitionIndex = Math.Clamp(Math.Min(previousIndex, nextIndex), 0, 3);
+		return "guide-blade-switch-" + (transitionIndex + 1).ToString(CultureInfo.InvariantCulture);
+	}
+
+	private bool _isBladesTraySelected;
+	public bool IsBladesTraySelected { get => _isBladesTraySelected; private set => SetProperty(ref _isBladesTraySelected,value); }
+
+	public bool MoveBladesMenuSelection(int delta)
+	{
+		if (IsBladesMenuTransitioning) return true;
+		IReadOnlyList<BladesMenuItemViewModel> bladesMenuItems = ActiveBladesMenuItems;
+		if (bladesMenuItems == null || bladesMenuItems.Count == 0)
+		{
+			return false;
+		}
+		int currentIndex = ActiveBladesMenuIndex;
+		if (IsBladesTraySelected)
+		{
+			if (delta < 0) { IsBladesTraySelected=false; NotifyActiveBladesMenuChanged(); PlayFocusSound(); }
+			return true;
+		}
+		if (!IsBladesSubmenuOpen && IsActiveBladesOpenTrayVisible && delta > 0 && currentIndex == bladesMenuItems.Count-1)
+		{
+			IsBladesTraySelected=true;
+			NotifyActiveBladesMenuChanged();
+			PlayFocusSound();
+			return true;
+		}
+		int num = Math.Clamp(currentIndex + delta, 0, bladesMenuItems.Count - 1);
+		if (num == currentIndex)
+		{
+			return true;
+		}
+		if (IsBladesSubmenuOpen)
+		{
+			_selectedBladesSubmenuIndex = num;
+			NotifyActiveBladesMenuChanged();
+		}
+		else
+		{
+			SelectedBladesMenuIndex = num;
+		}
+		PlayFocusSound();
+		return true;
+	}
+
+	public void ActivateBladesTray()
+	{
+		if (TrayGame != null) LaunchDashboardTile("home.open-tray");
+		else StatusMessage="No disc in tray";
+	}
+
+	public void ActivateSelectedBladesMenuItem()
+	{
+		if (IsBladesTraySelected && !IsBladesSubmenuOpen) { ActivateBladesTray(); return; }
+		OpenBladesMenuItem(ActiveBladesSelectedItem?.Key);
+	}
+
+	public bool HandleBladesAchievementsSubmenuInput(DashboardInputAction action)
+	{
+		if (!IsBladesAchievementsSubmenu)
+		{
+			return false;
+		}
+		return HandleBladesAchievementsInput(action);
+	}
+
+	private bool HandleBladesInput(DashboardInputAction action)
+	{
+		if (IsBladesMenuTransitioning) return true;
+		if (IsBladesAchievementsSubmenu)
+		{
+			return HandleBladesAchievementsInput(action);
+		}
+		if (IsBladesGameLibrarySubmenu)
+		{
+			return HandleBladesGameLibraryInput(action);
+		}
+		switch (action)
+		{
+		case DashboardInputAction.MoveUp:
+			return MoveBladesMenuSelection(-1);
+		case DashboardInputAction.MoveDown:
+			return MoveBladesMenuSelection(1);
+		case DashboardInputAction.MoveLeft:
+		case DashboardInputAction.PreviousTab:
+			if (IsBladesSubmenuOpen)
+			{
+				CloseBladesSubmenu();
+				return true;
+			}
+			return MoveBladesBladeSelection(-1);
+		case DashboardInputAction.MoveRight:
+		case DashboardInputAction.NextTab:
+			if (IsBladesSubmenuOpen)
+			{
+				ActivateSelectedBladesMenuItem();
+				return true;
+			}
+			return MoveBladesBladeSelection(1);
+		case DashboardInputAction.Activate:
+			ActivateSelectedBladesMenuItem();
+			return true;
+		case DashboardInputAction.Back:
+			if (IsBladesSubmenuOpen)
+			{
+				CloseBladesSubmenu();
+				return true;
+			}
+			return false;
+		default:
+			return false;
+		}
+	}
+
+	private bool HandleBladesGameLibraryInput(DashboardInputAction action)
+	{
+		switch (action)
+		{
+		case DashboardInputAction.MoveUp:
+			return MoveBladesMenuSelection(-1);
+		case DashboardInputAction.MoveDown:
+			return MoveBladesMenuSelection(1);
+		case DashboardInputAction.MoveLeft:
+		case DashboardInputAction.PreviousTab:
+			return MoveBladesGameLibraryCategory(-1);
+		case DashboardInputAction.MoveRight:
+		case DashboardInputAction.NextTab:
+			return MoveBladesGameLibraryCategory(1);
+		case DashboardInputAction.Activate:
+			ActivateSelectedBladesMenuItem();
+			return true;
+		case DashboardInputAction.Details:
+			GameCardViewModel? game = FindGameById(ActiveBladesSelectedItem?.Key?.Replace("BladesLaunchGame:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("BladesGameDetails:", string.Empty, StringComparison.OrdinalIgnoreCase) ?? string.Empty);
+			if (game != null)
+			{
+				SelectedGame = game;
+				OpenGameDetails();
+				_audioService.Play("select");
+			}
+			return true;
+		case DashboardInputAction.Back:
+			CloseBladesSubmenu();
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	private bool MoveBladesGameLibraryCategory(int delta)
+	{
+		int nextIndex = Math.Clamp(_selectedBladesGameLibraryCategoryIndex + delta, 0, 4);
+		if (nextIndex == _selectedBladesGameLibraryCategoryIndex)
+		{
+			return true;
+		}
+		_selectedBladesGameLibraryCategoryIndex = nextIndex;
+		_selectedBladesSubmenuIndex = 0;
+		NotifyActiveBladesMenuChanged();
+		_ = RefreshBladesGameLibraryDetailsAsync();
+		PlayFocusSound();
+		return true;
+	}
+
+	private string GetBladesGameLibraryTabForeground(int index)
+	{
+		if (index == _selectedBladesGameLibraryCategoryIndex)
+		{
+			return "#F4FFFFFF";
+		}
+		return "#FF172017";
+	}
+
+	private bool HandleBladesAchievementsInput(DashboardInputAction action)
+	{
+		const int achievementColumns = 6;
+		switch (action)
+		{
+		case DashboardInputAction.MoveUp:
+			return MoveBladesAchievementSelection(IsBladesAchievementListFocused ? -achievementColumns : -1);
+		case DashboardInputAction.MoveDown:
+			return MoveBladesAchievementSelection(IsBladesAchievementListFocused ? achievementColumns : 1);
+		case DashboardInputAction.MoveLeft:
+		case DashboardInputAction.PreviousTab:
+			if (IsBladesAchievementListFocused)
+			{
+				if (action == DashboardInputAction.MoveLeft && _selectedBladesAchievementIndex % achievementColumns != 0)
+				{
+					return MoveBladesAchievementSelection(-1);
+				}
+				SetBladesAchievementPaneFocus(false);
+			}
+			return true;
+		case DashboardInputAction.MoveRight:
+		case DashboardInputAction.NextTab:
+			if (!IsBladesAchievementListFocused && BladesAchievementItems.Count > 0)
+			{
+				SetBladesAchievementPaneFocus(true);
+				return true;
+			}
+			if (IsBladesAchievementListFocused && action == DashboardInputAction.MoveRight)
+			{
+				return MoveBladesAchievementSelection(1);
+			}
+			return true;
+		case DashboardInputAction.Activate:
+			OpenSelectedBladesAchievement();
+			return true;
+		case DashboardInputAction.Details:
+			string detailsGameId = IsBladesAchievementListFocused ? (SelectedBladesAchievementItem?.GameId ?? string.Empty) : (SelectedBladesAchievementGame?.GameId ?? string.Empty);
+			GameCardViewModel? game = FindGameById(detailsGameId);
+			if (game != null)
+			{
+				SelectedGame = game;
+				OpenGameDetails();
+				_audioService.Play("select");
+			}
+			return true;
+		case DashboardInputAction.Back:
+			CloseBladesSubmenu();
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	private void SetBladesAchievementPaneFocus(bool achievementListFocused)
+	{
+		if (_isBladesAchievementListFocused == achievementListFocused)
+		{
+			return;
+		}
+		IsBladesAchievementListFocused = achievementListFocused;
+		PlayFocusSound();
+	}
+
+	private bool MoveBladesAchievementSelection(int delta)
+	{
+		if (IsBladesAchievementListFocused)
+		{
+			int oldIndex = _selectedBladesAchievementIndex;
+			SelectedBladesAchievementIndex = Math.Clamp(_selectedBladesAchievementIndex + delta, 0, Math.Max(0, BladesAchievementItems.Count - 1));
+			if (_selectedBladesAchievementIndex != oldIndex)
+			{
+				PlayFocusSound();
+			}
+			return true;
+		}
+		int oldGameIndex = _selectedBladesAchievementGameIndex;
+		SelectedBladesAchievementGameIndex = Math.Clamp(_selectedBladesAchievementGameIndex + delta, 0, Math.Max(0, BladesAchievementGameItems.Count - 1));
+		if (_selectedBladesAchievementGameIndex != oldGameIndex)
+		{
+			PlayFocusSound();
+		}
+		return true;
+	}
+
+	private void OpenSelectedBladesAchievement()
+	{
+		BladesAchievementItemViewModel? achievement = SelectedBladesAchievementItem;
+		if (achievement == null)
+		{
+			return;
+		}
+		SelectedGame = FindGameById(achievement.GameId);
+		AchievementOverlayRequested?.Invoke(this, new DashboardAchievementOpenRequest(achievement.SteamAppId, achievement.ApiName));
+		_audioService.Play("select");
+	}
+
+	private void NotifyActiveBladesMenuChanged()
+	{
+		OnPropertyChanged("IsBladesSubmenuOpen");
+		OnPropertyChanged("IsBladesGamesLibraryRootSubmenu");
+		OnPropertyChanged("IsBladesGameLibrarySubmenu");
+		OnPropertyChanged("IsBladesAchievementsSubmenu");
+		OnPropertyChanged("IsBladesStandardSubmenu");
+		OnPropertyChanged("BladesBlades");
+		OnPropertyChanged("LeftBlades");
+		OnPropertyChanged("RightBlades");
+		OnPropertyChanged("ActiveBladesBlade");
+		OnPropertyChanged("IsActiveBladesProfileVisible");
+		OnPropertyChanged("IsActiveBladesMarketplace");
+		OnPropertyChanged("IsActiveBladesXboxLive");
+		OnPropertyChanged("IsActiveBladesGames");
+		OnPropertyChanged("IsActiveBladesMedia");
+		OnPropertyChanged("IsActiveBladesSystem");
+		OnPropertyChanged("IsActiveBladesOpenTrayVisible");
+		OnPropertyChanged("IsActiveBladesGenericMenuVisible");
+		OnPropertyChanged("ActiveBladesAccentBrush");
+		OnPropertyChanged("ActiveBladesTitle");
+		OnPropertyChanged("ActiveBladesMenuItems");
+		OnPropertyChanged("ActiveBladesMenuIndex");
+		OnPropertyChanged("ActiveBladesSelectedItem");
+		OnPropertyChanged("SelectedBladesMenuItem");
+		OnPropertyChanged("BladesOverlayAccentBrush");
+		OnPropertyChanged("BladesGameLibraryVisibleMenuItems");
+		OnPropertyChanged("BladesGameLibraryTab0Foreground");
+		OnPropertyChanged("BladesGameLibraryTab1Foreground");
+		OnPropertyChanged("BladesGameLibraryTab2Foreground");
+		OnPropertyChanged("BladesGameLibraryTab3Foreground");
+		OnPropertyChanged("BladesGameLibraryTab4Foreground");
+		NotifyBladesAchievementsChanged();
+	}
+
+	private void NotifyBladesAchievementsChanged()
+	{
+		RefreshBladesAchievementSelectionState();
+		OnPropertyChanged("SelectedBladesAchievementGame");
+		OnPropertyChanged("SelectedBladesAchievementItem");
+		OnPropertyChanged("BladesAchievementsHeaderTitle");
+		OnPropertyChanged("BladesAchievementsHeaderCountText");
+		OnPropertyChanged("BladesAchievementsHeaderRightText");
+	}
+
+	private void RefreshBladesAchievementCollections()
+	{
+		_bladesAchievementGameItems.Clear();
+		foreach (BladesAchievementGameViewModel game in BuildBladesAchievementGameItems())
+		{
+			_bladesAchievementGameItems.Add(game);
+		}
+		_selectedBladesAchievementGameIndex = Math.Clamp(_selectedBladesAchievementGameIndex, 0, Math.Max(0, _bladesAchievementGameItems.Count - 1));
+		RefreshBladesAchievementItems();
+		OnPropertyChanged("BladesAchievementGameItems");
+		OnPropertyChanged("BladesAchievementItems");
+	}
+
+	private void RefreshBladesAchievementItems()
+	{
+		_bladesAchievementItems.Clear();
+		foreach (BladesAchievementItemViewModel achievement in BuildBladesAchievementItems())
+		{
+			_bladesAchievementItems.Add(achievement);
+		}
+		_selectedBladesAchievementIndex = Math.Clamp(_selectedBladesAchievementIndex, 0, Math.Max(0, _bladesAchievementItems.Count - 1));
+		RefreshBladesAchievementSelectionState();
+		OnPropertyChanged("BladesAchievementItems");
+	}
+
+	private void RefreshBladesAchievementSelectionState()
+	{
+		for (int index = 0; index < _bladesAchievementGameItems.Count; index++)
+		{
+			_bladesAchievementGameItems[index].IsSelected = index == _selectedBladesAchievementGameIndex && !IsBladesAchievementListFocused;
+		}
+		for (int index = 0; index < _bladesAchievementItems.Count; index++)
+		{
+			_bladesAchievementItems[index].IsSelected = index == _selectedBladesAchievementIndex && IsBladesAchievementListFocused;
+		}
+	}
+
+	public Func<string, Action, Task>? BladesSubmenuTransition { get; set; }
+	public bool IsBladesMenuTransitioning { get; set; }
+
+	private void OpenBladesSubmenu(string key)
+	{
+		if (IsBladesMenuTransitioning) return;
+		if (BladesSubmenuTransition != null) _ = BladesSubmenuTransition(key, () => OpenBladesSubmenuCore(key));
+		else OpenBladesSubmenuCore(key);
+	}
+
+	private void OpenBladesSubmenuCore(string key)
+	{
+		IsBladesTraySelected=false;
+		_bladesSubmenuKey = key;
+		_selectedBladesSubmenuIndex = string.Equals(key, "GamesLibraryRoot", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+		if (string.Equals(key, "Achievements", StringComparison.OrdinalIgnoreCase))
+		{
+			_selectedBladesAchievementGameIndex = 0;
+			_selectedBladesAchievementIndex = 0;
+			_isBladesAchievementListFocused = false;
+			RefreshBladesAchievementCollections();
+			_ = RefreshBladesAchievementIconCachesAsync();
+			OnPropertyChanged("SelectedBladesAchievementGameIndex");
+			OnPropertyChanged("SelectedBladesAchievementIndex");
+		}
+		else if (string.Equals(key, "GamesLibrary", StringComparison.OrdinalIgnoreCase))
+		{
+			_selectedBladesGameLibraryCategoryIndex = 1;
+		}
+		else if (string.Equals(key, "PlayedGames", StringComparison.OrdinalIgnoreCase))
+		{
+			_selectedBladesGameLibraryCategoryIndex = 0;
+		}
+		NotifyActiveBladesMenuChanged();
+		if (IsBladesGameLibrarySubmenu)
+		{
+			_ = RefreshBladesGameLibraryDetailsAsync();
+		}
+		_audioService.Play("select");
+	}
+
+	private async Task RefreshBladesAchievementIconCachesAsync()
+	{
+		List<string> appIds = Games
+			.Where(game => !IsAppEntry(game.Game))
+			.Select(game => game.Game.SteamAppId)
+			.Where(appId =>
+			{
+				IReadOnlyList<SteamAchievementItem> achievements = ReadCachedUnlockedAchievements(appId);
+				return !string.IsNullOrWhiteSpace(appId) && (achievements.Count == 0 || achievements.Any(achievement => string.IsNullOrWhiteSpace(achievement.IconUrl) && string.IsNullOrWhiteSpace(achievement.IconGrayUrl)));
+			})
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToList();
+		if (appIds.Count == 0)
+		{
+			return;
+		}
+		foreach (string appId in appIds)
+		{
+			try
+			{
+				await _steamCommunityService.LoadAchievementsAsync(appId).ConfigureAwait(continueOnCapturedContext: true);
+			}
+			catch
+			{
+			}
+		}
+		if (IsBladesAchievementsSubmenu)
+		{
+			RefreshBladesAchievementCollections();
+			NotifyBladesAchievementsChanged();
+		}
+	}
+
+	private async Task RefreshBladesGameLibraryDetailsAsync()
+	{
+		List<GameCardViewModel> games = GetBladesGameLibraryItems()
+			.Where(game => game.IsSteamGame && !string.IsNullOrWhiteSpace(game.Game.SteamAppId))
+			.ToList();
+		if (games.Count == 0)
+		{
+			return;
+		}
+		bool changed = false;
+		foreach (GameCardViewModel game in games)
+		{
+			try
+			{
+				SteamGameDetails details = await _steamCommunityService.LoadGameDetailsAsync(game.Game.SteamAppId).ConfigureAwait(continueOnCapturedContext: true);
+				if (details.Playtime.HasValue && details.Playtime.Value != game.Game.Playtime)
+				{
+					game.Game.Playtime = details.Playtime.Value;
+					changed = true;
+				}
+				if (!string.IsNullOrWhiteSpace(details.Genre) && !string.Equals(game.Game.Genre, details.Genre, StringComparison.Ordinal))
+				{
+					game.Game.Genre = details.Genre;
+					changed = true;
+				}
+				if (!string.IsNullOrWhiteSpace(details.StoreDescription) && !string.Equals(game.Game.StoreDescription, details.StoreDescription, StringComparison.Ordinal))
+				{
+					game.Game.StoreDescription = details.StoreDescription;
+					changed = true;
+				}
+				game.Refresh();
+			}
+			catch
+			{
+			}
+		}
+		if (changed)
+		{
+			await PersistLibraryAsync();
+			NotifyActiveBladesMenuChanged();
+		}
+	}
+
+	private void CloseBladesSubmenu(bool playSound = true)
+	{
+		if (!playSound) { CloseBladesSubmenuCore(false); return; }
+		if (IsBladesMenuTransitioning || !IsBladesSubmenuOpen) return;
+		string target = _bladesSubmenuKey == "GamesLibrary" ? "GamesLibraryRoot" : string.Empty;
+		Action change = () =>
+		{
+			if (target.Length > 0) OpenBladesSubmenuCore(target);
+			else CloseBladesSubmenuCore(true);
+		};
+		if (BladesSubmenuTransition != null) _ = BladesSubmenuTransition(target, change);
+		else change();
+	}
+
+	private void CloseBladesSubmenuCore(bool playSound)
+	{
+		if (!IsBladesSubmenuOpen)
+		{
+			return;
+		}
+		_bladesSubmenuKey = string.Empty;
+		_selectedBladesSubmenuIndex = 0;
+		NotifyActiveBladesMenuChanged();
+		if (playSound)
+		{
+			_audioService.Play("back");
+		}
+	}
+
+	private IReadOnlyList<BladesMenuItemViewModel> BuildBladesSubmenuItems()
+	{
+		return _bladesSubmenuKey switch
+		{
+			"GamesLibrary" => BuildBladesGameItems("Play Game", "Select a game to launch it now.", "BladesLaunchGame:"),
+			"Achievements" => BuildBladesGameItems("Achievements", "Select a game to view achievement progress.", "BladesGameAchievements:"),
+			"PlayedGames" => BuildBladesGameItems("Played Games", "Select a game to view details.", "BladesGameDetails:"),
+			"GamesLibraryRoot" => new[]
+			{
+				BladesItem("Xbox LIVE", "\uE774", "Xbox LIVE", "Browse Xbox LIVE game content.", isEnabled: false),
+				BladesItem("My Games", "\uE7FC", "My Games", $"You have {Games.Count} games on your console. Select this option to play a game now.", Games.Count.ToString(CultureInfo.InvariantCulture), key: "BladesOpenSubmenu:GamesLibrary"),
+				BladesItem("Last Played Game", "\uE7FC", "Last Played Game", "Jump back to your most recently played game.", isEnabled: false),
+				BladesItem("Friends Playing Now", "\uE716", "Friends Playing Now", "See which friends are playing.", isEnabled: false),
+				BladesItem("Game Store", "\uE719", "Game Store", "Open game marketplace content.", key: "Game Store"),
+				BladesItem("Auto Downloads", "\uE896", "Auto Downloads", "Automatic downloads are off.", "Off", isEnabled: false)
+			},
+			"MusicSources" => new[]
+			{
+				BladesItem("Hard Drive", "\uE958", "Hard Drive", "Listen to music stored in your dashboard music folder.", key: "BladesOpenSubmenu:HardDrive"),
+				BladesItem("Spotify", "\uE93C", "Spotify", "Use Spotify as a dashboard music source.", key: "BladesOpenSpotify")
+			},
+			"HardDrive" => new[]
+			{
+				BladesItem("Saved Playlists", "\uE8D6", "Saved Playlists", "Choose a saved playlist from your Music Files folder.", key: "BladesOpenHardDrive"),
+				BladesItem("Songs", "\uE8D6", "Songs", "Browse songs in your Music Files folder.", key: "BladesOpenHardDrive")
+			},
+			"Apps" => BuildBladesAppItems(),
+			"Profile" => new[]
+			{
+				BladesItem("View Games", "\uE7FC", "View Games", "View games attached to this profile."),
+				BladesItem("Edit Profile", "\uE70F", "Edit Profile", "Open the profile editor.", key: "BladesOpenProfileEditor"),
+				BladesItem("View Rep", "\uECA7", "View Rep", "View profile reputation."),
+				BladesItem("Game Defaults", "\uE7FC", "Game Defaults", "Game defaults are not available in Blades yet."),
+				BladesItem("Sign-in Preferences", "\uE72E", "Sign-in Preferences", "Sign-in options are handled by DashX360."),
+				BladesItem("Account Security", "\uE72E", "Account Security", "Account security is visual only in DashX360."),
+			},
+			"InsideXbox" => BuildBladesPlaceholderItems("Inside Xbox", "Xbox LIVE news and videos are not connected."),
+			"ConsoleSettings" => BuildBladesSettingsItems("Console Settings"),
+			"DashboardCustomization" => BuildBladesSettingsItems("Dashboard Customization"),
+			"GamesSetup" => BuildBladesSettingsItems("Games Setup"),
+			"Audio" => BuildBladesSettingsItems("Audio"),
+			"DataControl" => BuildBladesSettingsItems("Data Control"),
+			"GameStore" => BuildBladesPlaceholderItems("Game Store", "Marketplace content is not available."),
+			"Pins" => BuildBladesPlaceholderItems("My Pins", "Pinned shortcuts appear on the Metro dashboard."),
+			"VideoStore" => BuildBladesPlaceholderItems("Video Store", "Video marketplace content is not available."),
+			_ => BuildBladesPlaceholderItems(ActiveBladesTitle, "No options are available.")
+		};
+	}
+
+	private static BladesMenuItemViewModel BladesItem(string title, string iconGlyph, string detailTitle, string detailDescription, string countText = "", bool isEnabled = true, string? key = null, bool isSelected = false, string? iconPath = null, string detailMetaText = "")
+	{
+		return new BladesMenuItemViewModel(title, iconGlyph, detailTitle, detailDescription, countText, isEnabled, key, isSelected, iconPath ?? GetBladesIconPath(title), detailMetaText);
+	}
+
+	private static string GetBladesIconPath(string title)
+	{
+		return title switch
+		{
+			"Spotlight" => "Assets/Blades/Icons/ico_64x_Downloads.png",
+			"New Arrivals" => "Assets/Blades/ProvidedIconsFit/marketplace/new arrivals.png",
+			"Game Store" => "Assets/Blades/ProvidedIconsFit/marketplace/game store.png",
+			"Video Store" => "Assets/Blades/ProvidedIconsFit/marketplace/video store.png",
+			"Redeem Code" => "Assets/Blades/ProvidedIconsFit/marketplace/redeem code orange.png",
+			"Active Downloads" => "Assets/Blades/ProvidedIconsFit/marketplace/active downloads.png",
+			"Account Management" => "Assets/Blades/ProvidedIconsFit/marketplace/account management orange.png",
+			"Inside Xbox" => "Assets/Blades/ProvidedIconsFit/xbox live/dashcomm__ico_64x_InsideXbox.png",
+			"Friends" => "Assets/Blades/ProvidedIconsFit/xbox live/Friends.png",
+			"Chat and IM" => "Assets/Blades/ProvidedIconsFit/xbox live/chat and im.png",
+			"Games Library" => "Assets/Blades/ProvidedIconsFit/games/Games Library.png",
+			"Achievements" => "Assets/Blades/ProvidedIconsFit/games/Achievements.png",
+			"Played Games" => "Assets/Blades/ProvidedIconsFit/games/Played Games.png",
+			"Music" => "Assets/Blades/ProvidedIconsFit/media/music.png",
+			"Pictures" => "Assets/Blades/ProvidedIconsFit/media/pictures.png",
+			"Videos" => "Assets/Blades/ProvidedIconsFit/media/videos.png",
+			"Media Center" => "Assets/Blades/ProvidedIconsFit/media/media center.png",
+			"Console Settings" => "Assets/Blades/ProvidedIconsFit/system/console settings.png",
+			"Family Settings" => "Assets/Blades/ProvidedIconsFit/system/family settings.png",
+			"Memory" => "Assets/Blades/ProvidedIconsFit/system/memory.png",
+			"Network Settings" => "Assets/Blades/ProvidedIconsFit/system/network settings.png",
+			"Xbox LIVE Vision" => "Assets/Blades/ProvidedIconsFit/system/XBOX LIVE Vision.png",
+			"Initial Setup" => "Assets/Blades/ProvidedIconsFit/system/initial setup.png",
+			_ => string.Empty
+		};
+	}
+
+	private IReadOnlyList<BladesMenuItemViewModel> BuildBladesGameLibraryVisibleMenuItems()
+	{
+		IReadOnlyList<BladesMenuItemViewModel> items = BuildBladesSubmenuItems();
+		if (items.Count == 0)
+		{
+			return items;
+		}
+		const int visibleCount = 6;
+		int selectedIndex = Math.Clamp(_selectedBladesSubmenuIndex, 0, items.Count - 1);
+		int startIndex = Math.Clamp(selectedIndex - 2, 0, Math.Max(0, items.Count - visibleCount));
+		List<BladesMenuItemViewModel> visibleItems = items.Skip(startIndex).Take(visibleCount).ToList();
+		return MarkSelectedBladesItem(visibleItems, selectedIndex - startIndex);
+	}
+
+	private static IReadOnlyList<BladesMenuItemViewModel> MarkSelectedBladesItem(IReadOnlyList<BladesMenuItemViewModel> items, int selectedIndex)
+	{
+		if (items.Count == 0)
+		{
+			return items;
+		}
+		int clampedIndex = selectedIndex < 0 ? -1 : Math.Clamp(selectedIndex, 0, items.Count - 1);
+		return items.Select((item, index) => BladesItem(
+			item.Title,
+			item.IconGlyph,
+			item.DetailTitle,
+			item.DetailDescription,
+			item.CountText,
+			item.IsEnabled,
+			item.Key,
+			index == clampedIndex,
+			item.IconPath,
+			item.DetailMetaText)).ToArray();
+	}
+
+	private IReadOnlyList<BladesMenuItemViewModel> BuildBladesGameItems(string fallbackTitle, string emptyDescription, string keyPrefix)
+	{
+		List<GameCardViewModel> games = (string.Equals(keyPrefix, "BladesLaunchGame:", StringComparison.OrdinalIgnoreCase) || string.Equals(keyPrefix, "BladesGameDetails:", StringComparison.OrdinalIgnoreCase)
+				? GetBladesGameLibraryItems()
+				: Games.Where(game => !IsAppEntry(game.Game)).OrderBy(game => game.Title, StringComparer.CurrentCultureIgnoreCase))
+			.ToList();
+		if (string.Equals(keyPrefix, "BladesGameAchievements:", StringComparison.OrdinalIgnoreCase))
+		{
+			games = games
+				.Where(game => CountCachedUnlockedAchievements(game.Game.SteamAppId) > 0)
+				.ToList();
+		}
+		if (games.Count == 0)
+		{
+			return BuildBladesPlaceholderItems(fallbackTitle, emptyDescription);
+		}
+		return games.Select(game => BladesItem(
+			game.Title,
+			"\uE7FC",
+			game.IsSteamGame ? "Steam Game" : "Manual Game",
+			string.Equals(keyPrefix, "BladesGameAchievements:", StringComparison.OrdinalIgnoreCase)
+				? $"{CountCachedUnlockedAchievements(game.Game.SteamAppId)} unlocked achievements"
+				: BuildBladesGameLibraryDetailText(game),
+			string.Equals(keyPrefix, "BladesGameAchievements:", StringComparison.OrdinalIgnoreCase)
+				? string.Empty
+				: BuildBladesGameAchievementProgressText(game),
+			isEnabled: true,
+			keyPrefix + game.Game.Id,
+			iconPath: GetBladesLibraryItemIconPath(game),
+			detailMetaText: string.Equals(keyPrefix, "BladesGameAchievements:", StringComparison.OrdinalIgnoreCase)
+				? string.Empty
+				: BuildBladesGameLibraryMetaText(game))).ToList();
+	}
+
+	private static string BuildBladesGameLibraryDetailText(GameCardViewModel game)
+	{
+		return BuildBladesGameDescriptionText(game);
+	}
+
+	private static string BuildBladesGameLibraryMetaText(GameCardViewModel game)
+	{
+		string playtimeText = game.DetailsPlaytimeText;
+		string lastPlayedText = game.Game.LastPlayed.HasValue
+			? "Last played: " + game.Game.LastPlayed.Value.LocalDateTime.ToString("MMM d, yyyy h:mm tt", CultureInfo.CurrentCulture)
+			: "Last played: Never";
+		return $"{playtimeText}{Environment.NewLine}{lastPlayedText}";
+	}
+
+	private static string BuildBladesGameDescriptionText(GameCardViewModel game)
+	{
+		if (!string.IsNullOrWhiteSpace(game.Game.StoreDescription))
+		{
+			return ShortenBladesText(game.Game.StoreDescription, 142);
+		}
+		string genreText = string.IsNullOrWhiteSpace(game.DetailsGenreText) || string.Equals(game.DetailsGenreText, "Game", StringComparison.OrdinalIgnoreCase)
+			? "game"
+			: game.DetailsGenreText.Trim().ToLowerInvariant() + " game";
+		if (game.IsSteamGame)
+		{
+			return $"A Steam {genreText}. Store description will appear after Steam details are loaded.";
+		}
+		return $"A manually added {genreText} in your DashX360 library.";
+	}
+
+	private static string ShortenBladesText(string value, int maxLength)
+	{
+		string text = Regex.Replace(value.Trim(), "\\s+", " ");
+		if (text.Length <= maxLength)
+		{
+			return text;
+		}
+		return text.Substring(0, Math.Max(0, maxLength - 3)).TrimEnd() + "...";
+	}
+
+	private static string BuildBladesGameAchievementProgressText(GameCardViewModel game)
+	{
+		int unlockedAchievements = CountCachedUnlockedAchievements(game.Game.SteamAppId);
+		int totalAchievements = CountCachedAchievementTotal(game.Game.SteamAppId);
+		return $"{unlockedAchievements}/{totalAchievements} Achievements unlocked";
+	}
+
+	private IEnumerable<GameCardViewModel> GetBladesGameLibraryItems()
+	{
+		IEnumerable<GameCardViewModel> games = Games;
+		switch (_selectedBladesGameLibraryCategoryIndex)
+		{
+		case 0:
+			return games
+				.Where(game => !IsAppEntry(game.Game) && game.Game.LastPlayed.HasValue)
+				.OrderByDescending(game => game.Game.LastPlayed ?? DateTimeOffset.MinValue);
+		case 2:
+			return games
+				.Where(game => IsAppEntry(game.Game) && !IsBuiltInYouTubeEntry(game.Game))
+				.OrderBy(game => game.Title, StringComparer.CurrentCultureIgnoreCase);
+		case 3:
+			return games
+				.Where(game => !IsAppEntry(game.Game) && string.Equals(game.Game.LaunchType, "Steam", StringComparison.OrdinalIgnoreCase))
+				.OrderBy(game => game.Title, StringComparer.CurrentCultureIgnoreCase);
+		case 4:
+			return games
+				.Where(game => !IsAppEntry(game.Game) && !string.Equals(game.Game.LaunchType, "Steam", StringComparison.OrdinalIgnoreCase))
+				.OrderBy(game => game.Title, StringComparer.CurrentCultureIgnoreCase);
+		default:
+			return games
+				.Where(game => !IsAppEntry(game.Game))
+				.OrderBy(game => game.Title, StringComparer.CurrentCultureIgnoreCase);
+		}
+	}
+
+	private static string GetBladesLibraryItemIconPath(GameCardViewModel game)
+	{
+		if (!string.IsNullOrWhiteSpace(game.Game.LogoImagePath))
+		{
+			return game.Game.LogoImagePath;
+		}
+		if (!string.IsNullOrWhiteSpace(game.CoverArtPath))
+		{
+			return game.CoverArtPath;
+		}
+		return string.Empty;
+	}
+
+	private static int CountCachedUnlockedAchievements(string appId)
+	{
+		if (string.IsNullOrWhiteSpace(appId))
+		{
+			return 0;
+		}
+		try
+		{
+			string safeAppId = string.Concat(appId.Where(char.IsLetterOrDigit));
+			if (string.IsNullOrWhiteSpace(safeAppId))
+			{
+				return 0;
+			}
+			string cachePath = Path.Combine(AppPaths.UserDataFolder, "SteamCache", "Achievements", safeAppId + ".json");
+			if (!File.Exists(cachePath))
+			{
+				return 0;
+			}
+			List<SteamAchievementItem>? achievements = JsonSerializer.Deserialize<List<SteamAchievementItem>>(File.ReadAllText(cachePath));
+			return achievements?.Count(achievement => achievement.Achieved) ?? 0;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	private static int CountCachedAchievementTotal(string appId)
+	{
+		if (string.IsNullOrWhiteSpace(appId))
+		{
+			return 0;
+		}
+		try
+		{
+			string safeAppId = string.Concat(appId.Where(char.IsLetterOrDigit));
+			if (string.IsNullOrWhiteSpace(safeAppId))
+			{
+				return 0;
+			}
+			string cachePath = Path.Combine(AppPaths.UserDataFolder, "SteamCache", "Achievements", safeAppId + ".json");
+			if (!File.Exists(cachePath))
+			{
+				return 0;
+			}
+			List<SteamAchievementItem>? achievements = JsonSerializer.Deserialize<List<SteamAchievementItem>>(File.ReadAllText(cachePath));
+			return achievements?.Count ?? 0;
+		}
+		catch
+		{
+			return 0;
+		}
+	}
+
+	private IReadOnlyList<BladesAchievementGameViewModel> BuildBladesAchievementGameItems()
+	{
+		List<BladesAchievementGameViewModel> games = Games
+			.Where(game => !IsAppEntry(game.Game))
+			.Select(game => new
+			{
+				Game = game,
+				Achievements = ReadCachedUnlockedAchievements(game.Game.SteamAppId)
+			})
+			.Where(game => game.Achievements.Count > 0)
+			.OrderBy(game => game.Game.Title, StringComparer.CurrentCultureIgnoreCase)
+			.Select((game, index) => new BladesAchievementGameViewModel(
+				game.Game.Game.Id,
+				game.Game.Game.SteamAppId,
+				game.Game.Title,
+				string.IsNullOrWhiteSpace(game.Game.Game.LogoImagePath) ? game.Game.CoverArtPath : game.Game.Game.LogoImagePath,
+				game.Achievements.Count,
+				index + 1 == _selectedBladesAchievementGameIndex))
+			.ToList();
+		int totalUnlocked = games.Sum(game => game.UnlockedCount);
+		if (totalUnlocked > 0)
+		{
+			games.Insert(0, new BladesAchievementGameViewModel(string.Empty, string.Empty, "All Games", "Assets/Blades/Icons/ico_64x_games.png", totalUnlocked, _selectedBladesAchievementGameIndex == 0));
+		}
+		return games;
+	}
+
+	private IReadOnlyList<BladesAchievementItemViewModel> BuildBladesAchievementItems()
+	{
+		BladesAchievementGameViewModel? selectedGame = SelectedBladesAchievementGame;
+		IEnumerable<GameCardViewModel> games = Games.Where(game => !IsAppEntry(game.Game));
+		if (selectedGame != null && !string.IsNullOrWhiteSpace(selectedGame.GameId))
+		{
+			games = games.Where(game => string.Equals(game.Game.Id, selectedGame.GameId, StringComparison.OrdinalIgnoreCase));
+		}
+		return games
+			.SelectMany(game => ReadCachedUnlockedAchievements(game.Game.SteamAppId).Select(achievement => new
+			{
+				Game = game,
+				Achievement = achievement
+			}))
+			.OrderBy(item => selectedGame != null && !string.IsNullOrWhiteSpace(selectedGame.GameId) ? item.Achievement.Name : item.Game.Title, StringComparer.CurrentCultureIgnoreCase)
+			.ThenBy(item => item.Achievement.Name, StringComparer.CurrentCultureIgnoreCase)
+			.Select((item, index) => new BladesAchievementItemViewModel(
+				item.Game.Game.Id,
+				item.Game.Game.SteamAppId,
+				item.Game.Title,
+				string.IsNullOrWhiteSpace(item.Achievement.ApiName) ? item.Achievement.Name : item.Achievement.ApiName,
+				string.IsNullOrWhiteSpace(item.Achievement.Name) ? item.Achievement.ApiName : item.Achievement.Name,
+				item.Achievement.Description,
+				ResolveAchievementIconPath(item.Game.Game.SteamAppId, item.Achievement),
+				index == _selectedBladesAchievementIndex))
+			.ToList();
+	}
+
+	private static IReadOnlyList<SteamAchievementItem> ReadCachedUnlockedAchievements(string appId)
+	{
+		if (string.IsNullOrWhiteSpace(appId))
+		{
+			return Array.Empty<SteamAchievementItem>();
+		}
+		try
+		{
+			string safeAppId = PathSafeSteamAppId(appId);
+			if (string.IsNullOrWhiteSpace(safeAppId))
+			{
+				return Array.Empty<SteamAchievementItem>();
+			}
+			string cachePath = Path.Combine(AppPaths.UserDataFolder, "SteamCache", "Achievements", safeAppId + ".json");
+			if (!File.Exists(cachePath))
+			{
+				return Array.Empty<SteamAchievementItem>();
+			}
+			List<SteamAchievementItem>? achievements = JsonSerializer.Deserialize<List<SteamAchievementItem>>(File.ReadAllText(cachePath));
+			return achievements?.Where(achievement => achievement.Achieved).ToList() ?? new List<SteamAchievementItem>();
+		}
+		catch
+		{
+			return Array.Empty<SteamAchievementItem>();
+		}
+	}
+
+	private static string ResolveAchievementIconPath(string appId, SteamAchievementItem achievement)
+	{
+		if (!string.IsNullOrWhiteSpace(achievement.IconUrl))
+		{
+			return achievement.IconUrl;
+		}
+		if (!string.IsNullOrWhiteSpace(achievement.IconGrayUrl))
+		{
+			return achievement.IconGrayUrl;
+		}
+		return string.Empty;
+	}
+
+	private static string PathSafeSteamAppId(string appId)
+	{
+		return string.Concat(appId.Where(char.IsLetterOrDigit));
+	}
+
+	private IReadOnlyList<BladesMenuItemViewModel> BuildBladesAppItems()
+	{
+		if (AppLibraryTiles.Count == 0)
+		{
+			return BuildBladesPlaceholderItems("My Apps", "No apps are available.");
+		}
+		return AppLibraryTiles.Select((AppLibraryTileViewModel app, int index) => BladesItem(
+			app.Title,
+			string.IsNullOrWhiteSpace(app.Glyph) ? "\uE71D" : app.Glyph,
+			app.Title,
+			"Select this app to launch it.",
+			string.Empty,
+			isEnabled: true,
+			"BladesLaunchApp:" + index.ToString(CultureInfo.InvariantCulture))).ToList();
+	}
+
+	private static IReadOnlyList<BladesMenuItemViewModel> BuildBladesSocialItems(string title, string description, string key)
+	{
+		return new[]
+		{
+			BladesItem("Open " + title, "\uE716", title, description, key: key)
+		};
+	}
+
+	private IReadOnlyList<BladesMenuItemViewModel> BuildBladesSettingsItems(string sectionTitle)
+	{
+		return sectionTitle switch
+		{
+			"Console Settings" => new[]
+			{
+				BladesItem("Display", "\uE7F4", "Display", "Change aspect ratio and fullscreen settings.", key: "BladesOpenSettings"),
+				BladesItem("Controller", "\uE7FC", "Controller", "Change controller input settings.", key: "BladesOpenSettings"),
+				BladesItem("Dashboard Style", "\uE771", "Dashboard Style", "Switch between Metro and Blades.", key: "BladesOpenSettings"),
+				BladesItem("Startup", "\uE8B7", "Startup", "Change launch and loading options.", key: "BladesOpenSettings")
+			},
+			"Dashboard Customization" => new[]
+			{
+				BladesItem("Create Theme", "\uE771", "Create Theme", "Create or edit dashboard themes.", key: "BladesOpenDashboardCustomization"),
+				BladesItem("Customize Tiles", "\uE771", "Customize Tiles", "Change tile images, labels, colors, and shortcuts.", key: "BladesOpenDashboardCustomization")
+			},
+			"Games Setup" => new[]
+			{
+				BladesItem("Scan Steam Games", "\uE7FC", "Scan Steam Games", "Import installed Steam games.", key: "BladesOpenGamesSetup"),
+				BladesItem("Add Executable", "\uE8A5", "Add Executable", "Add games, apps, shortcuts, and URLs.", key: "BladesOpenGamesSetup"),
+				BladesItem("Edit Items", "\uE70F", "Edit Items", "Edit names, executables, and cover fit.", key: "BladesOpenGamesSetup")
+			},
+			"Audio" => new[]
+			{
+				BladesItem("Output Device Select", "\uE995", "Output Device Select", "Choose which Windows audio output plays dashboard sounds.", key: "BladesOpenAudioSettings"),
+				BladesItem("Music Files", "\uE8D6", "Music Files", "Open the local music folder.", key: "BladesOpenAudioSettings"),
+				BladesItem("Dashboard Volume", "\uE995", "Dashboard Volume", "Change DashX360 audio volume.", key: "BladesOpenAudioSettings")
+			},
+			"Data Control" => new[]
+			{
+				BladesItem("Import Data", "\uE8B5", "Import Data", "Restore dashboard data from a backup file.", key: "BladesOpenDataControl"),
+				BladesItem("Export Data", "\uE8B5", "Export Data", "Save a dashboard backup file.", key: "BladesOpenDataControl")
+			},
+			_ => BuildBladesPlaceholderItems(sectionTitle, "No options are available.")
+		};
+	}
+
+	private static IReadOnlyList<BladesMenuItemViewModel> BuildBladesPlaceholderItems(string title, string description)
+	{
+		return new[]
+		{
+			BladesItem(title, "\uE10F", title, description, isEnabled: false)
+		};
+	}
+
+	private bool IsOverlayOpenForBladesInput()
+	{
+		if (IsSearchOverlayOpen || IsDetailsOpen || IsQuickMenuOpen || IsMyGamesOpen || IsLauncherSettingsOpen || IsProfileEditorOpen || IsThemeMenuOpen || IsThemeCreatorOpen)
+		{
+			return true;
+		}
+		if (IsDashboardCustomizerOpen || IsSteamSetupOpen || IsSpotifySetupOpen || IsMusicPlayerOpen || IsYouTubeTvOpen)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	private void OpenBladesMenuItem(string? item)
+	{
+		if (string.IsNullOrWhiteSpace(item))
+		{
+			return;
+		}
+		string key = item.Trim();
+		if (string.Equals(key, "BladesNoAction", StringComparison.OrdinalIgnoreCase))
+		{
+			return;
+		}
+		if (key.StartsWith("BladesOpenSubmenu:", StringComparison.OrdinalIgnoreCase))
+		{
+			string submenuKey = key.Substring("BladesOpenSubmenu:".Length);
+			if (string.Equals(submenuKey, "MusicSources", StringComparison.OrdinalIgnoreCase))
+			{
+				OpenMusicPlayer(transparent: false);
+				return;
+			}
+			if (string.Equals(submenuKey, "ConsoleSettings", StringComparison.OrdinalIgnoreCase))
+			{
+				OpenLauncherSettings();
+				return;
+			}
+			OpenBladesSubmenu(submenuKey);
+			return;
+		}
+		if (key.StartsWith("BladesLaunchGame:", StringComparison.OrdinalIgnoreCase))
+		{
+			GameCardViewModel? game = FindGameById(key.Substring("BladesLaunchGame:".Length));
+			if (game != null)
+			{
+				SelectedGame = game;
+				_ = LaunchGameAsync(game);
+			}
+			return;
+		}
+		if (key.StartsWith("BladesGameDetails:", StringComparison.OrdinalIgnoreCase))
+		{
+			GameCardViewModel? game = FindGameById(key.Substring("BladesGameDetails:".Length));
+			if (game != null)
+			{
+				SelectedGame = game;
+				OpenGameDetails();
+			}
+			return;
+		}
+		if (key.StartsWith("BladesGameAchievements:", StringComparison.OrdinalIgnoreCase))
+		{
+			GameCardViewModel? game = FindGameById(key.Substring("BladesGameAchievements:".Length));
+			if (game != null)
+			{
+				SelectedGame = game;
+				OpenGameDetails();
+			}
+			return;
+		}
+		if (key.StartsWith("BladesLaunchApp:", StringComparison.OrdinalIgnoreCase))
+		{
+			if (int.TryParse(key.Substring("BladesLaunchApp:".Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out int index) && index >= 0 && index < AppLibraryTiles.Count)
+			{
+				LaunchAppLibraryTileCommand.Execute(AppLibraryTiles[index]);
+			}
+			return;
+		}
+		switch (key)
+		{
+		case "Search Bing":
+		case "Recent Searches":
+			OpenSearch();
+			break;
+		case "Internet Explorer":
+			OpenDefaultBrowser();
+			break;
+		case "My Pins":
+			OpenBladesSubmenu("Pins");
+			break;
+		case "Recent":
+			OpenBladesSubmenu("PlayedGames");
+			break;
+		case "Games Library":
+		case "My Games":
+			OpenBladesSubmenu("GamesLibraryRoot");
+			break;
+		case "Game Details":
+		case "Played Games":
+			OpenBladesSubmenu("PlayedGames");
+			break;
+		case "Achievements":
+			OpenBladesSubmenu("Achievements");
+			break;
+		case "Profile":
+			OpenBladesSubmenu("Profile");
+			break;
+		case "Friends":
+			RequestFriendsOverlay();
+			break;
+		case "Party":
+		case "Chat and IM":
+			RequestPartyOverlay();
+			break;
+		case "Inside Xbox":
+			OpenBladesSubmenu("InsideXbox");
+			break;
+		case "Video Player":
+		case "Movies & TV":
+			OpenBladesSubmenu("VideoStore");
+			break;
+		case "Windows Media Center":
+			OpenWindowsMediaPlayerLegacy();
+			break;
+		case "Game Marketplace":
+		case "Game Store":
+			OpenBladesSubmenu("GameStore");
+			break;
+		case "Music Player":
+			OpenMusicNowPlaying(transparent: false);
+			break;
+		case "Select Music":
+		case "Music":
+			BladesMusicRequested?.Invoke(this, EventArgs.Empty);
+			break;
+		case "Hard Drive":
+			OpenBladesSubmenu("HardDrive");
+			break;
+		case "Spotify":
+			OpenBladesSubmenu("MusicSources");
+			break;
+		case "My Apps":
+		case "Browse Apps":
+			OpenBladesSubmenu("Apps");
+			break;
+		case "YouTube":
+			OpenYouTube();
+			break;
+		case "Dashboard Customization":
+			OpenBladesSubmenu("DashboardCustomization");
+			break;
+		case "Console Settings":
+			OpenLauncherSettings();
+			break;
+		case "Games Setup":
+			OpenBladesSubmenu("GamesSetup");
+			break;
+		case "Audio":
+			OpenBladesSubmenu("Audio");
+			break;
+		case "Data Control":
+			OpenBladesSubmenu("DataControl");
+			break;
+		case "BladesOpenProfileEditor":
+			OpenProfileEditor();
+			break;
+		case "BladesOpenFriends":
+			RequestFriendsOverlay();
+			break;
+		case "BladesOpenParty":
+			RequestPartyOverlay();
+			break;
+		case "BladesOpenHardDrive":
+			OpenMusicPlayer(transparent: false);
+			OpenHardDriveBrowser();
+			break;
+		case "BladesOpenSpotify":
+			OpenMusicPlayer(transparent: false);
+			OpenSpotifyBrowser();
+			break;
+		case "BladesOpenSettings":
+			OpenLauncherSettings();
+			break;
+		case "BladesOpenDashboardCustomization":
+			OpenDashboardCustomizer();
+			break;
+		case "BladesOpenGamesSetup":
+		case "BladesOpenAudioSettings":
+		case "BladesOpenDataControl":
+			OpenLauncherSettings();
+			break;
+		default:
+			if (string.Equals(key, OpenTrayTitle, StringComparison.OrdinalIgnoreCase))
+			{
+				_ = SetOpenTrayGameAsync(null);
+			}
+			break;
+		}
+	}
+
+	private GameCardViewModel? FindGameById(string id)
+	{
+		return Games.FirstOrDefault(game => string.Equals(game.Game.Id, id, StringComparison.OrdinalIgnoreCase));
 	}
 
 	private void SelectGameDetailsTab(string key)
@@ -3152,8 +4870,8 @@ public sealed class DashboardViewModel : ObservableObject
 		foreach (GameCardViewModel app in Games.Where((GameCardViewModel game) => IsAppEntry(game.Game) && !IsBuiltInYouTubeEntry(game.Game)).OrderBy((GameCardViewModel game) => game.Title, StringComparer.CurrentCultureIgnoreCase))
 		{
 			int appIndex = AppLibraryTiles.Count - 5;
-			int row = appIndex < 3 ? 1 : 0;
-			int column = appIndex < 3 ? appIndex + 2 : Math.Min(4, appIndex - 3 + 3);
+			int row = appIndex % 2 == 0 ? 1 : 0;
+			int column = 2 + (appIndex + 1) / 2;
 			double left = firstX + step * column;
 			double top = firstY + step * row;
 			string iconPath = app.CoverArtPath;
@@ -3170,6 +4888,7 @@ public sealed class DashboardViewModel : ObservableObject
 		}
 		SelectedAppLibraryTile = selectedTile ?? AppLibraryTiles.FirstOrDefault();
 		OnPropertyChanged("LibraryMenuCountText");
+		OnPropertyChanged("AppLibraryCanvasWidth");
 	}
 
 	private void OpenMyGames()
@@ -3239,6 +4958,7 @@ public sealed class DashboardViewModel : ObservableObject
 
 	private void OpenLauncherSettings()
 	{
+		CloseBladesSubmenu(playSound: false);
 		EnsureSelectedSetupItem();
 		IsLauncherSettingsOpen = true;
 		IsMyGamesOpen = false;
@@ -3339,6 +5059,7 @@ public sealed class DashboardViewModel : ObservableObject
 
 	private void OpenMusicPlayer(bool transparent = false, bool playSound = true)
 	{
+		CloseBladesSubmenu(playSound: false);
 		_closeMusicPlayerOnBack = false;
 		IsMusicPlayerTransparent = transparent;
 		IsMusicVisualizerFullscreen = false;
@@ -4093,6 +5814,13 @@ public sealed class DashboardViewModel : ObservableObject
 		this.FriendsOverlayRequested?.Invoke(this, EventArgs.Empty);
 	}
 
+	private void RequestPartyOverlay()
+	{
+		IsQuickMenuOpen = false;
+		IsDetailsOpen = false;
+		this.PartyOverlayRequested?.Invoke(this, EventArgs.Empty);
+	}
+
 	public Task<RunningGameCloseResult> CloseRunningGameAsync(bool forceKill, CancellationToken cancellationToken = default(CancellationToken))
 	{
 		return _runningGameService.CloseAsync(forceKill, cancellationToken);
@@ -4513,10 +6241,37 @@ public sealed class DashboardViewModel : ObservableObject
 	private async Task SaveProfileAsync()
 	{
 		EnsureProfileDefaults();
-		await _profileService.SaveAsync(Profile);
+		await SaveProfileSilentlyAsync();
 		OnPropertyChanged("Profile");
 		OnPropertyChanged("TopRightGamerscoreText");
 		StatusMessage = "Profile saved";
+	}
+
+	private void Profile_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		OnPropertyChanged("Profile");
+		if (e.PropertyName == nameof(Profile.Gamerscore))
+		{
+			OnPropertyChanged("TopRightGamerscoreText");
+		}
+		if (!_suppressProfileAutosave)
+		{
+			_profileSaveTimer.Stop();
+			_profileSaveTimer.Start();
+		}
+	}
+
+	private async Task SaveProfileSilentlyAsync()
+	{
+		try
+		{
+			await _profileService.SaveAsync(Profile);
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "DashboardViewModel.SaveProfileSilentlyAsync");
+			StatusMessage = "Profile could not be saved.";
+		}
 	}
 
 	private async Task ToggleProfileEditAsync()
@@ -4534,6 +6289,14 @@ public sealed class DashboardViewModel : ObservableObject
 		Profile.Description = EditableProfileDescription?.Trim() ?? string.Empty;
 		Profile.Gamerscore = ParseEditableGamerscore(EditableProfileGamerscore, Profile.Gamerscore);
 		await SaveProfileAsync();
+		RefreshEditableProfileFields();
+		IsProfileMenuEditing = false;
+	}
+
+	public Task SaveBladesProfileEditAsync() => IsProfileMenuEditing ? ToggleProfileEditAsync() : Task.CompletedTask;
+
+	public void CancelBladesProfileEdit()
+	{
 		RefreshEditableProfileFields();
 		IsProfileMenuEditing = false;
 	}
@@ -4560,6 +6323,7 @@ public sealed class DashboardViewModel : ObservableObject
 
 	private async Task ShutdownAsync()
 	{
+		_profileSaveTimer.Stop();
 		await _settingsService.SaveAsync(Settings);
 		await _profileService.SaveAsync(Profile);
 		System.Windows.Application.Current.Shutdown();
@@ -6068,6 +7832,11 @@ public sealed class DashboardViewModel : ObservableObject
 				selected.Game.CoOpInfo = steamGameDetails.CoOpInfo;
 				flag = true;
 			}
+			if (!string.IsNullOrWhiteSpace(steamGameDetails.StoreDescription) && !string.Equals(selected.Game.StoreDescription, steamGameDetails.StoreDescription, StringComparison.Ordinal))
+			{
+				selected.Game.StoreDescription = steamGameDetails.StoreDescription;
+				flag = true;
+			}
 			if (!string.IsNullOrWhiteSpace(steamGameDetails.StoreScreenshotPath) && !string.Equals(selected.Game.StoreScreenshotPath, steamGameDetails.StoreScreenshotPath, StringComparison.Ordinal))
 			{
 				selected.Game.StoreScreenshotPath = steamGameDetails.StoreScreenshotPath;
@@ -7113,6 +8882,24 @@ public sealed class DashboardViewModel : ObservableObject
 		return "16:9";
 	}
 
+	private static string NormalizeDashboardStyle(string? value)
+	{
+		if (string.Equals(value, "Blades", StringComparison.OrdinalIgnoreCase))
+		{
+			return "Blades";
+		}
+		return "Metro";
+	}
+
+	private static string NormalizeDashboardThemeChoice(string? value)
+	{
+		if (string.Equals(value, "Blades", StringComparison.OrdinalIgnoreCase))
+		{
+			return "Blades";
+		}
+		return "Metro";
+	}
+
 	private string NormalizeAudioOutputDeviceName(string? deviceName)
 	{
 		return AudioOutputDeviceOptions.FirstOrDefault((string option) => string.Equals(option, deviceName, StringComparison.OrdinalIgnoreCase)) ?? "Default";
@@ -7407,6 +9194,105 @@ public sealed class DashboardViewModel : ObservableObject
 			game.Refresh();
 		}
 		PersistLibraryAsync();
+	}
+
+	public sealed class BladesAchievementGameViewModel : ObservableObject
+	{
+		private bool _isSelected;
+
+		public string GameId { get; }
+
+		public string SteamAppId { get; }
+
+		public string Title { get; }
+
+		public string IconPath { get; }
+
+		public bool HasIconPath => !string.IsNullOrWhiteSpace(IconPath);
+
+		public int UnlockedCount { get; }
+
+		public string CountText => UnlockedCount.ToString(CultureInfo.InvariantCulture);
+
+		public bool IsSelected
+		{
+			get
+			{
+				return _isSelected;
+			}
+			set
+			{
+				SetProperty(ref _isSelected, value, "IsSelected");
+			}
+		}
+
+		public BladesAchievementGameViewModel(string gameId, string steamAppId, string title, string iconPath, int unlockedCount, bool isSelected)
+		{
+			GameId = gameId;
+			SteamAppId = steamAppId;
+			Title = title;
+			IconPath = iconPath;
+			UnlockedCount = unlockedCount;
+			_isSelected = isSelected;
+		}
+	}
+
+	public sealed class BladesAchievementItemViewModel : ObservableObject
+	{
+		private bool _isSelected;
+
+		public string GameId { get; }
+
+		public string SteamAppId { get; }
+
+		public string GameTitle { get; }
+
+		public string ApiName { get; }
+
+		public string Title { get; }
+
+		public string Description { get; }
+
+		public string IconPath { get; }
+
+		public bool HasIconPath => !string.IsNullOrWhiteSpace(IconPath);
+
+		public bool IsSelected
+		{
+			get
+			{
+				return _isSelected;
+			}
+			set
+			{
+				SetProperty(ref _isSelected, value, "IsSelected");
+			}
+		}
+
+		public BladesAchievementItemViewModel(string gameId, string steamAppId, string gameTitle, string apiName, string title, string description, string iconPath, bool isSelected)
+		{
+			GameId = gameId;
+			SteamAppId = steamAppId;
+			GameTitle = gameTitle;
+			ApiName = apiName;
+			Title = title;
+			Description = description;
+			IconPath = iconPath;
+			_isSelected = isSelected;
+		}
+	}
+
+	public sealed class DashboardAchievementOpenRequest
+	{
+		public string SteamAppId { get; }
+
+		public string AchievementApiName { get; }
+
+		public DashboardAchievementOpenRequest(string steamAppId, string achievementApiName)
+		{
+			SteamAppId = steamAppId;
+			AchievementApiName = achievementApiName;
+		}
 	}
 
 	private sealed class SpotifyMirrorPlaylist

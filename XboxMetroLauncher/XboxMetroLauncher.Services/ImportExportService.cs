@@ -154,6 +154,10 @@ public sealed class ImportExportService : IImportExportService
 			ThemeName = settings.ThemeName,
 			BingSearchBaseUrl = settings.BingSearchBaseUrl,
 			DisplayResolution = settings.DisplayResolution,
+			DashboardStyle = settings.DashboardStyle,
+			XboxGuide = settings.XboxGuide,
+			DashboardSounds = settings.DashboardSounds,
+			DashboardStartup = settings.DashboardStartup,
 			OpenTrayGameId = settings.OpenTrayGameId,
 			GameCoverFitMode = settings.GameCoverFitMode,
 			DefaultAddDestination = settings.DefaultAddDestination,
@@ -200,6 +204,10 @@ public sealed class ImportExportService : IImportExportService
 		current.ThemeName = (string.IsNullOrWhiteSpace(imported.ThemeName) ? current.ThemeName : imported.ThemeName);
 		current.BingSearchBaseUrl = (string.IsNullOrWhiteSpace(imported.BingSearchBaseUrl) ? current.BingSearchBaseUrl : imported.BingSearchBaseUrl);
 		current.DisplayResolution = (string.IsNullOrWhiteSpace(imported.DisplayResolution) ? current.DisplayResolution : imported.DisplayResolution);
+		current.DashboardStyle = (string.IsNullOrWhiteSpace(imported.DashboardStyle) ? current.DashboardStyle : imported.DashboardStyle);
+		current.XboxGuide = imported.XboxGuide;
+		current.DashboardSounds = (string.IsNullOrWhiteSpace(imported.DashboardSounds) ? current.DashboardSounds : imported.DashboardSounds);
+		current.DashboardStartup = (string.IsNullOrWhiteSpace(imported.DashboardStartup) ? current.DashboardStartup : imported.DashboardStartup);
 		current.OpenTrayGameId = imported.OpenTrayGameId ?? string.Empty;
 		current.GameCoverFitMode = (string.IsNullOrWhiteSpace(imported.GameCoverFitMode) ? current.GameCoverFitMode : imported.GameCoverFitMode);
 		current.DefaultAddDestination = (string.IsNullOrWhiteSpace(imported.DefaultAddDestination) ? current.DefaultAddDestination : imported.DefaultAddDestination);

@@ -210,6 +210,7 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 	private DateTimeOffset _runningGameForceCloseRequestedAt = DateTimeOffset.MinValue;
 
 	public ObservableCollection<GuideMenuItem> Items { get; }
+	public ObservableCollection<DashPartyTextMessage> BladesMessages { get; } = new();
 
 	public ObservableCollection<GuideMediaControlItem> MediaControls { get; }
 
@@ -1968,15 +1969,12 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 			Items.Add(new GuideMenuItem("Xbox Home", string.Empty, OpenXboxHome));
 			Items.Add(new GuideMenuItem("Friends", "\ue13d", OpenFriends, _socialFriends.Count.ToString()));
 			Items.Add(new GuideMenuItem("Party", "\ue716", OpenParty, PartyMemberCount.ToString()));
-			Items.Add(new GuideMenuItem("Messages", "\ue119", delegate
+			Items.Add(new GuideMenuItem("Inside Xbox", "\ue119", delegate
 			{
-				ShowPlaceholder("Messages");
+				ShowPlaceholder("Inside Xbox");
 			}, "0"));
 			Items.Add(new GuideMenuItem("Minimize", "\ue8bb", CloseGuide));
-			Items.Add(new GuideMenuItem("Chat", "\ue15f", delegate
-			{
-				ShowPlaceholder("Chat");
-			}));
+			Items.Add(new GuideMenuItem("Chat and IM", "\ue15f", OpenParty));
 			Items.Add(new GuideMenuItem(_dashboard.TrayGame?.Title ?? string.Empty, "\ue958", OpenTray));
 			break;
 		}
@@ -2174,6 +2172,44 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 		OnPropertyChanged("AchievementsUnlockedText");
 	}
 
+	public async void OpenAchievementFromDashboard(string steamAppId, string achievementApiName)
+	{
+		SetScreen(GuideScreen.Achievements);
+		BuildAchievementGameList();
+		int gameIndex = AchievementGameItems.Select((GuideAchievementGameItem item, int index) => new
+		{
+			item,
+			index
+		}).FirstOrDefault(candidate => string.Equals(candidate.item.SteamAppId, steamAppId, StringComparison.OrdinalIgnoreCase))?.index ?? 0;
+		SelectedAchievementGameIndex = gameIndex;
+		SelectedAchievementIndex = 0;
+		AchievementItems.Clear();
+		RefreshAchievementGameSelection();
+		RefreshAchievementSelection();
+		OnPropertyChanged("IsAchievementGameList");
+		OnPropertyChanged("IsAchievementDetail");
+		OnPropertyChanged("AchievementsGameTitle");
+		OnPropertyChanged("AchievementsCountText");
+		OnPropertyChanged("AchievementsUnlockedText");
+		await LoadSelectedAchievementGameAsync().ConfigureAwait(continueOnCapturedContext: true);
+		int achievementIndex = AchievementItems.Select((GuideAchievementItem item, int index) => new
+		{
+			item,
+			index
+		}).FirstOrDefault(candidate => string.Equals(candidate.item.ApiName, achievementApiName, StringComparison.OrdinalIgnoreCase))?.index ?? -1;
+		if (achievementIndex < 0)
+		{
+			achievementIndex = AchievementItems.Select((GuideAchievementItem item, int index) => new
+			{
+				item,
+				index
+			}).FirstOrDefault(candidate => string.Equals(candidate.item.Title, achievementApiName, StringComparison.CurrentCultureIgnoreCase))?.index ?? 0;
+		}
+		SelectedAchievementIndex = Math.Clamp(achievementIndex, 0, Math.Max(0, AchievementItems.Count - 1));
+		RefreshAchievementSelection();
+		NotifySelectedAchievementChanged();
+	}
+
 	private void BuildAchievementGameList()
 	{
 		string selectedAppId = GetAchievementGame()?.SteamAppId ?? string.Empty;
@@ -2229,10 +2265,12 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 				AchievementItems.Add(new GuideAchievementItem
 				{
 					Title = (string.IsNullOrWhiteSpace(item.Name) ? item.ApiName : item.Name),
+					ApiName = item.ApiName,
 					Description = item.Description,
 					Achieved = item.Achieved,
 					StatusText = (item.Achieved ? "Unlocked" : "Locked"),
-					UnlockTimeUnix = item.UnlockTimeUnix
+					UnlockTimeUnix = item.UnlockTimeUnix,
+					IconPath = item.Achieved ? ResolveAchievementIconPath(item) : string.Empty
 				});
 			}
 			game.UnlockedCount = AchievementItems.Count((GuideAchievementItem guideAchievementItem) => guideAchievementItem.Achieved);
@@ -2256,6 +2294,19 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 			OnPropertyChanged("AchievementsCountText");
 			OnPropertyChanged("AchievementsUnlockedText");
 		}
+	}
+
+	private static string ResolveAchievementIconPath(SteamAchievementItem achievement)
+	{
+		if (!string.IsNullOrWhiteSpace(achievement.IconUrl))
+		{
+			return achievement.IconUrl;
+		}
+		if (!string.IsNullOrWhiteSpace(achievement.IconGrayUrl))
+		{
+			return achievement.IconGrayUrl;
+		}
+		return string.Empty;
 	}
 
 	private GameMetadata? GetAchievementGame()
@@ -2699,6 +2750,17 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 		}
 	}
 
+	public void OpenPartyOverlayFromDashboard()
+	{
+		if (CanUseFriendsOverlay())
+		{
+			_selectedTabIndex = 2;
+			BuildItems();
+			NotifyTabStateChanged();
+			OpenPartyImmediate();
+		}
+	}
+
 	private void OpenFriendsList()
 	{
 		if (CanUseFriendsOverlay())
@@ -2967,6 +3029,7 @@ public sealed class GuideViewModel : ObservableObject, IDisposable
 		if (messages.Count > 0)
 		{
 			_dashUnreadMessageCount += messages.Count;
+			foreach (var message in messages) BladesMessages.Add(message);
 			DashPartyTextMessage latest = messages[messages.Count - 1];
 			string sender = (string.IsNullOrWhiteSpace(latest.FromGamertag) ? "DashX360 Player" : latest.FromGamertag);
 			ShowSocialMessage(sender + ": " + latest.Message);

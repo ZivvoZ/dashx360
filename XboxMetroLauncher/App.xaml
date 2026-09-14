@@ -2,7 +2,7 @@
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="Themes/MetroTheme.xaml" />
+        <ResourceDictionary Source="/themes/MetroTheme.xaml" />
       </ResourceDictionary.MergedDictionaries>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />

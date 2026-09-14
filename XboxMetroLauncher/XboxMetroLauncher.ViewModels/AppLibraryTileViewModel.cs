@@ -28,6 +28,8 @@ public sealed class AppLibraryTileViewModel : ObservableObject
 
 	public double Top { get; }
 
+	public double Right => Left + Width;
+
 	public int ZIndex => IsSelected ? 10 : 0;
 
 	public bool IsSelected

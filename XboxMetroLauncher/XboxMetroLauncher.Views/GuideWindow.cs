@@ -19,7 +19,7 @@ using XboxMetroLauncher.ViewModels;
 
 namespace XboxMetroLauncher.Views;
 
-public partial class GuideWindow : Window
+public partial class GuideWindow : Window, IGuideWindow
 {
 	private readonly record struct OverlayFocusCandidate(Control Control, Rect Bounds);
 

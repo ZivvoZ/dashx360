@@ -67,7 +67,7 @@ public sealed class StringToImageSourceConverter : IValueConverter
 				bitmapImage.DecodePixelWidth = decodeWidth;
 			}
 			bitmapImage.EndInit();
-			((Freezable)bitmapImage).Freeze();
+			if (bitmapImage.CanFreeze) bitmapImage.Freeze();
 			return bitmapImage;
 		});
 	}

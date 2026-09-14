@@ -22,6 +22,13 @@ public sealed class DashboardBackupSettings
 
 	public string DisplayResolution { get; set; } = "16:9";
 
+	public string DashboardStyle { get; set; } = "Metro";
+	public string XboxGuide { get; set; } = "Metro";
+
+	public string DashboardSounds { get; set; } = "Metro";
+
+	public string DashboardStartup { get; set; } = "Metro";
+
 	public string OpenTrayGameId { get; set; } = string.Empty;
 
 	public string GameCoverFitMode { get; set; } = "Auto";

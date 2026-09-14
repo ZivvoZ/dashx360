@@ -963,6 +963,9 @@
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
                       <Grid Width="54" Height="54" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Name="AchievementImageFrame" Width="54" Height="54" Background="#FF252A2C" BorderBrush="#DFFFFFFF" BorderThickness="1" Visibility="Collapsed" ClipToBounds="True">
+                          <Image Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding IconPath, Converter={StaticResource StringToImageSourceConverter}, ConverterParameter=96}" />
+                        </Border>
                         <Canvas Name="UnlockedIcon" Width="54" Height="54" Visibility="Collapsed">
                           <Path Stretch="Uniform" Width="42" Height="42" Canvas.Left="6" Canvas.Top="6" Data="M8,2 L22,2 L20,17 C19,22 16,25 15,25 C14,25 11,22 10,17 M3,5 L8,5 L8,9 L5,9 C4,9 4,10 4,11 C4,14 6,16 9,16 L10,20 C4,19 0,15 0,10 C0,7 1,5 3,5 M22,5 L27,5 C29,5 30,7 30,10 C30,15 26,19 20,20 L21,16 C24,16 26,14 26,11 C26,10 26,9 25,9 L22,9 M12,25 L18,25 L18,29 L23,29 L23,32 L7,32 L7,29 L12,29" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
                         </Canvas>
@@ -973,6 +976,11 @@
                       <DataTemplate.Triggers>
                         <DataTrigger Value="True" Binding="{Binding Achieved}">
                           <Setter TargetName="UnlockedIcon" Property="UIElement.Visibility" Value="Visible" />
+                          <Setter TargetName="LockedIcon" Property="UIElement.Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Value="True" Binding="{Binding HasIconPath}">
+                          <Setter TargetName="AchievementImageFrame" Property="UIElement.Visibility" Value="Visible" />
+                          <Setter TargetName="UnlockedIcon" Property="UIElement.Visibility" Value="Collapsed" />
                           <Setter TargetName="LockedIcon" Property="UIElement.Visibility" Value="Collapsed" />
                         </DataTrigger>
                       </DataTemplate.Triggers>

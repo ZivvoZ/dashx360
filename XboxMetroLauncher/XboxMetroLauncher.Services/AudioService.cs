@@ -20,65 +20,98 @@ public sealed class AudioService : IAudioService
 
 	private sealed class CachedWavePool : IDisposable
 	{
-		private readonly AudioFileReader[] _readers;
+		private readonly AudioFileReader?[] _readers;
 
-		private readonly WaveOutEvent[] _outputs;
+		private readonly WaveOutEvent?[] _outputs;
+
+		private readonly string _path;
+		private readonly object _sync = new object();
 
 		private int _nextIndex;
+		private bool _disposed;
 
 		public CachedWavePool(string path, int count)
 		{
-			_readers = new AudioFileReader[count];
-			_outputs = new WaveOutEvent[count];
-			for (int i = 0; i < count; i++)
+			_path = path;
+			_readers = new AudioFileReader?[count];
+			_outputs = new WaveOutEvent?[count];
+			EnsureSlot(0);
+		}
+
+		private void EnsureSlot(int i)
+		{
+			if (_outputs[i] != null) return;
+			AudioFileReader reader = new AudioFileReader(_path);
+			WaveOutEvent output = new WaveOutEvent { DeviceNumber = -1 };
+			try
 			{
-				AudioFileReader reader = new AudioFileReader(path);
-				WaveOutEvent output = new WaveOutEvent
-				{
-					DeviceNumber = -1
-				};
 				output.Init(reader);
 				_readers[i] = reader;
 				_outputs[i] = output;
+			}
+			catch
+			{
+				output.Dispose();
+				reader.Dispose();
+				throw;
 			}
 		}
 
 		public void Play(double volume)
 		{
-			int index = _nextIndex;
-			_nextIndex = (_nextIndex + 1) % _outputs.Length;
-			WaveOutEvent output = _outputs[index];
-			AudioFileReader reader = _readers[index];
-			output.Stop();
-			reader.Position = 0L;
-			reader.Volume = (float)Math.Clamp(volume, 0.0, 1.0);
-			output.Play();
+			lock (_sync)
+			{
+				ObjectDisposedException.ThrowIf(_disposed, this);
+				int index = _nextIndex;
+				// Reuse an idle output before allocating another overlapping voice.
+				for (int i = 0; i < _outputs.Length; i++)
+				{
+					if (_outputs[i] == null || _outputs[i]!.PlaybackState == PlaybackState.Stopped)
+					{
+						index = i;
+						break;
+					}
+				}
+				EnsureSlot(index);
+				_nextIndex = (index + 1) % _outputs.Length;
+				WaveOutEvent output = _outputs[index]!;
+				AudioFileReader reader = _readers[index]!;
+				output.Stop();
+				reader.Position = 0L;
+				reader.Volume = (float)Math.Clamp(volume, 0.0, 1.0);
+				output.Play();
+			}
 		}
 
 		public void Dispose()
 		{
-			for (int i = 0; i < _outputs.Length; i++)
+			lock (_sync)
 			{
-				try
+				if (_disposed) return;
+				_disposed = true;
+				for (int i = 0; i < _outputs.Length; i++)
 				{
-					_outputs[i]?.Stop();
-				}
-				catch
-				{
-				}
-				try
-				{
-					_outputs[i]?.Dispose();
-				}
-				catch
-				{
-				}
-				try
-				{
-					_readers[i]?.Dispose();
-				}
-				catch
-				{
+					try
+					{
+						_outputs[i]?.Stop();
+					}
+					catch
+					{
+					}
+					try
+					{
+						_outputs[i]?.Dispose();
+					}
+					catch
+					{
+					}
+					try
+					{
+						_readers[i]?.Dispose();
+					}
+					catch
+					{
+					}
 				}
 			}
 		}
@@ -89,6 +122,8 @@ public sealed class AudioService : IAudioService
 	private readonly Func<string> _selectedOutputDeviceName;
 
 	private readonly Func<double> _dashboardVolume;
+
+	private readonly Func<string> _dashboardSoundTheme;
 
 	private readonly Panel? _host;
 
@@ -118,6 +153,13 @@ public sealed class AudioService : IAudioService
 		["page-left"] = new string[4] { "09. Page Right.mp3", "swipe-left.wav", "08. Page Left.mp3", "tab.wav" },
 		["page-right"] = new string[4] { "08. Page Left.mp3", "swipe-right.wav", "09. Page Right.mp3", "tab.wav" },
 		["tab"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-0"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-1"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-2"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-3"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-4"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-5"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
+		["tab-switch-6"] = new string[2] { "09. Page Right.mp3", "tab.wav" },
 		["select"] = new string[3] { "10. Select A.mp3", "13. Select.mp3", "select.wav" },
 		["settings-box"] = new string[2] { "11. Select A (Alt).mp3", "10. Select A.mp3" },
 		["menu-in"] = new string[4] { "select-into-menu.wav", "select-into-alt.wav", "10. Select A.mp3", "select.wav" },
@@ -126,6 +168,7 @@ public sealed class AudioService : IAudioService
 		["activate"] = new string[3] { "10. Select A.mp3", "13. Select.mp3", "select.wav" },
 		["back"] = new string[3] { "14. Back.mp3", "15. Back 2.mp3", "back.wav" },
 		["focus"] = new string[4] { "tile-hover.wav", "13. Select.mp3", "11. Select A (Alt).mp3", "focus.wav" },
+		["hover"] = new string[4] { "tile-hover.wav", "13. Select.mp3", "11. Select A (Alt).mp3", "focus.wav" },
 		["guide-open"] = new string[2] { "hud-open.wav", "10. Select A.mp3" },
 		["guide-close"] = new string[2] { "hud-close.wav", "14. Back.mp3" },
 		["guide-blade-open"] = new string[2] { "blade-open.wav", "hud-open.wav" },
@@ -142,12 +185,46 @@ public sealed class AudioService : IAudioService
 		["guide-back"] = new string[2] { "guide-back.wav", "14. Back.mp3" }
 	};
 
-	public AudioService(Func<bool> isEnabled, Panel? host = null, Func<string>? selectedOutputDeviceName = null, Func<double>? dashboardVolume = null)
+	private static readonly Dictionary<string, string[]> BladesSoundFiles = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+	{
+		["page-left"] = new string[1] { "blades-switch-live-to-games.wav" },
+		["page-right"] = new string[1] { "blades-switch-games-to-media.wav" },
+		["tab"] = new string[1] { "blades-switch-live-to-games.wav" },
+		["tab-switch-0"] = new string[1] { "blades-switch-bing-to-home.wav" },
+		["tab-switch-1"] = new string[1] { "blades-switch-home-to-social.wav" },
+		["tab-switch-2"] = new string[1] { "blades-switch-social-to-media.wav" },
+		["tab-switch-3"] = new string[1] { "blades-switch-media-to-games.wav" },
+		["tab-switch-4"] = new string[1] { "blades-switch-games-to-music.wav" },
+		["tab-switch-5"] = new string[1] { "blades-switch-music-to-apps.wav" },
+		["tab-switch-6"] = new string[1] { "blades-switch-apps-to-settings.wav" },
+		["select"] = new string[1] { "blades-select.wav" },
+		["settings-box"] = new string[1] { "blades-select.wav" },
+		["menu-in"] = new string[1] { "blades-menu-open.wav" },
+		["guide-music-sources-load"] = new string[1] { "blades-menu-open.wav" },
+		["menu-out"] = new string[1] { "blades-back.wav" },
+		["activate"] = new string[1] { "blades-select.wav" },
+		["back"] = new string[1] { "blades-back.wav" },
+		["focus"] = new string[1] { "blades-hover.wav" },
+		["hover"] = new string[1] { "blades-hover.wav" },
+		["guide-open"] = new string[1] { "blades-guide-open.wav" },
+		["guide-close"] = new string[1] { "blades-guide-close.wav" },
+		["guide-hover"] = new string[1] { "blades-hover.wav" },
+		["guide-select"] = new string[1] { "blades-select.wav" },
+		["guide-back"] = new string[1] { "blades-back.wav" },
+		["guide-blade-open"] = new string[1] { "blades-menu-open.wav" },
+		["guide-blade-switch-1"] = new string[1] { "blades-switch-marketplace-to-live.wav" },
+		["guide-blade-switch-2"] = new string[1] { "blades-switch-live-to-games.wav" },
+		["guide-blade-switch-3"] = new string[1] { "blades-switch-games-to-media.wav" },
+		["guide-blade-switch-4"] = new string[1] { "blades-switch-media-to-system.wav" }
+	};
+
+	public AudioService(Func<bool> isEnabled, Panel? host = null, Func<string>? selectedOutputDeviceName = null, Func<double>? dashboardVolume = null, Func<string>? dashboardSoundTheme = null)
 	{
 		_isEnabled = isEnabled;
 		_host = host;
 		_selectedOutputDeviceName = selectedOutputDeviceName ?? ((Func<string>)(() => "Default"));
 		_dashboardVolume = dashboardVolume ?? ((Func<double>)(() => 1.0));
+		_dashboardSoundTheme = dashboardSoundTheme ?? ((Func<string>)(() => "Metro"));
 		PreloadLowLatencyWave("focus");
 		PreloadLowLatencyWave("startup");
 		PreloadLowLatencyWave("notify-popup");
@@ -523,10 +600,11 @@ public sealed class AudioService : IAudioService
 		}
 	}
 
-	private static string? ResolveSoundPath(string soundName)
+	private string? ResolveSoundPath(string soundName)
 	{
 		string[] value;
-		string[] array = (SoundFiles.TryGetValue(soundName, out value) ? value : new string[2]
+		Dictionary<string, string[]> soundFiles = IsBladesSoundTheme() ? BladesSoundFiles : SoundFiles;
+		string[] array = (soundFiles.TryGetValue(soundName, out value) || SoundFiles.TryGetValue(soundName, out value) ? value : new string[2]
 		{
 			soundName + ".mp3",
 			soundName + ".wav"
@@ -550,6 +628,18 @@ public sealed class AudioService : IAudioService
 			}
 		}
 		return null;
+	}
+
+	private bool IsBladesSoundTheme()
+	{
+		try
+		{
+			return string.Equals(_dashboardSoundTheme(), "Blades", StringComparison.OrdinalIgnoreCase);
+		}
+		catch
+		{
+			return false;
+		}
 	}
 
 	private void ClosePlayer(MediaPlayer mediaPlayer)
@@ -656,6 +746,13 @@ public sealed class AudioService : IAudioService
 		case "page-left":
 		case "page-right":
 		case "tab":
+		case "tab-switch-0":
+		case "tab-switch-1":
+		case "tab-switch-2":
+		case "tab-switch-3":
+		case "tab-switch-4":
+		case "tab-switch-5":
+		case "tab-switch-6":
 			timeSpan = TimeSpan.FromMilliseconds(150.0);
 			break;
 		default:

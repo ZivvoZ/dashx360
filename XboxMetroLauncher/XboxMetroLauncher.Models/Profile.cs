@@ -1,20 +1,38 @@
+using XboxMetroLauncher.ViewModels;
+
 namespace XboxMetroLauncher.Models;
 
-public sealed class Profile
+public sealed class Profile : ObservableObject
 {
-	public string Gamertag { get; set; } = "Player One";
+	private string _gamertag = "Player One";
 
-	public string Name { get; set; } = "(No name)";
+	private string _name = "(No name)";
 
-	public string GamerPicturePath { get; set; } = string.Empty;
+	private string _gamerPicturePath = string.Empty;
 
-	public int Gamerscore { get; set; } = 36000;
+	private int _gamerscore = 36000;
 
-	public string OnlineStatus { get; set; } = "Online";
+	private string _onlineStatus = "Online";
 
-	public string Motto { get; set; } = "(No motto)";
+	private string _motto = "(No motto)";
 
-	public string Location { get; set; } = "United States";
+	private string _location = "United States";
 
-	public string Description { get; set; } = "(No bio)";
+	private string _description = "(No bio)";
+
+	public string Gamertag { get => _gamertag; set => SetProperty(ref _gamertag, value, nameof(Gamertag)); }
+
+	public string Name { get => _name; set => SetProperty(ref _name, value, nameof(Name)); }
+
+	public string GamerPicturePath { get => _gamerPicturePath; set => SetProperty(ref _gamerPicturePath, value, nameof(GamerPicturePath)); }
+
+	public int Gamerscore { get => _gamerscore; set => SetProperty(ref _gamerscore, value, nameof(Gamerscore)); }
+
+	public string OnlineStatus { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value, nameof(OnlineStatus)); }
+
+	public string Motto { get => _motto; set => SetProperty(ref _motto, value, nameof(Motto)); }
+
+	public string Location { get => _location; set => SetProperty(ref _location, value, nameof(Location)); }
+
+	public string Description { get => _description; set => SetProperty(ref _description, value, nameof(Description)); }
 }
