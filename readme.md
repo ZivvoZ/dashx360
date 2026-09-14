@@ -1,38 +1,35 @@
-# DashX360, an Xbox 360 Metro Dashboard for Windows
+# DashX360 — Xbox 360 Metro & Blades Dashboards for Windows
 
-The first fanmade recreation of the Xbox 360 metro dashboard experience for Windows with tile navigation, controller support, Guide overlays, local profile data, custom themes, boot media, and dashboard audio cues.
+**The first fanmade recreation of the Xbox 360 Metro Dashboard experience for Windows — now featuring both Metro and Blades dashboards.**
 
 If you like my work, feel free to donate to my ko-fi! however money will never be needed to use this! https://Ko-fi.com/zivvoz
 
 Original app credit: ZivvoZ
 https://youtube.com/@zivvoz
 
-## Version 1.2.2 New Features
+## DashX360 v1.3.0 — Blades Update
 
-* Added Spotify media controls.
-* Added a YouTube app.
-* Added widescreen support.
-* Added dashboard volume control under Audio Settings.
-* Added more visual-only loading menus (optional)
-* Support for adding shortcuts and URLS to tiles and shortcuts in My Games/My Apps
-* Overhauled dashboard sounds, and menu animations.
+### What's New
 
-## Bug Fixes and Improvements
+* Added the new **Xbox 360 Blades-style dashboard**
+* Marketplace, Xbox Live, Games, Media, and System blades
+* Blades opening, closing, and navigation animations
+* Added a **Blades-style Xbox Guide** based on the original dashboard 
+* Controller navigation throughout the Blades interface
+* Integrated Blades alongside the existing Metro Dashboard
+* Various interface refinements throughout DashX360
+* General performance, stability, and quality-of-life improvements
 
-* Tweaked dashboard tab positioning and alignment.
-* Refined the Music Player, Apps, Profile, and Add Friend menus.
-* Improved navigation in the Friends and Themes menus.
-* The on-screen **(B) Back** button can now be clicked with a mouse.
-* Fixed achievement information not displaying when opening a game.
-* Fixed broken keyboard navigation in the Friends and Themes menus.
-* Fixed Steam friends showing **Send Friend Request** instead of **Remove Friend**.
-* Additional bug fixes, stability improvements, and quality-of-life changes.
+The Blades recreation is still being improved, and some animations and smaller visual details may change in future versions.
+
 
 ## Features
 
-- Xbox 360-inspired dashboard tabs for games, apps, music, video, social, Bing, and settings
+- Xbox 360-inspired Metro dashboard tabs for games, apps, music, video, social, Bing, and settings
+- Xbox 360-inspired Blades dashboard tabs for marketplace, xbox live, games, media and system
 - Controller-first navigation with keyboard and mouse support
 - Xbox Guide overlay with Friends, Party, Profile, media controls, achievements, and search screens
+- Swap between blades and metro style, guide, sounds and startup to make your OWN personal dashboard
 - Local profile and friend data with cached gamer pictures
 - Boot video, dashboard audio cues, and Metro-style tile presentation
 - Custom theme support
