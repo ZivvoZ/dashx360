@@ -4011,16 +4011,23 @@ public sealed class DashboardViewModel : ObservableObject
 		{
 			return;
 		}
-		foreach (string appId in appIds)
+		using SemaphoreSlim concurrency = new SemaphoreSlim(4, 4);
+		Task[] loads = appIds.Select(async appId =>
 		{
+			await concurrency.WaitAsync().ConfigureAwait(continueOnCapturedContext: false);
 			try
 			{
-				await _steamCommunityService.LoadAchievementsAsync(appId).ConfigureAwait(continueOnCapturedContext: true);
+				await _steamCommunityService.LoadAchievementsAsync(appId).ConfigureAwait(continueOnCapturedContext: false);
 			}
 			catch
 			{
 			}
-		}
+			finally
+			{
+				concurrency.Release();
+			}
+		}).ToArray();
+		await Task.WhenAll(loads).ConfigureAwait(continueOnCapturedContext: true);
 		if (IsBladesAchievementsSubmenu)
 		{
 			RefreshBladesAchievementCollections();
