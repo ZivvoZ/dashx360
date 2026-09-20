@@ -30,7 +30,7 @@
    <Setter Property="FontSize" Value="21"/><Setter Property="Padding" Value="1"/>
   </Style>
  </Window.Resources>
- <Grid>
+ <Grid x:Name="GuideRoot" Focusable="True">
   <Border x:Name="Dimmer" Background="#B8000000" Opacity="0"/>
   <Viewbox Stretch="Uniform" HorizontalAlignment="Left">
    <Canvas Width="1280" Height="720" ClipToBounds="True">
@@ -91,8 +91,8 @@
      </Canvas>
      <Grid x:Name="Footer" Margin="102,582,86,0" VerticalAlignment="Top" Height="65">
       <StackPanel HorizontalAlignment="Left">
-       <StackPanel x:Name="DashboardPrompt" Orientation="Horizontal"><controls:BladePadGlyph Letter="Y" Width="23" Height="23"/><TextBlock Text="Minimize Dashboard" FontSize="18" Foreground="White" Margin="3,0,0,0"/></StackPanel>
-       <StackPanel x:Name="SignOutPrompt" Orientation="Horizontal"><controls:BladePadGlyph Letter="X" Width="23" Height="23"/><TextBlock Text="{Binding Dashboard.RunningGameFooterActionText}" FontSize="18" Foreground="White" Margin="3,0,0,0"/></StackPanel>
+       <StackPanel x:Name="DashboardPrompt" Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="MinimizeDashboardHint_OnMouseLeftButtonUp"><controls:BladePadGlyph Letter="Y" Width="23" Height="23"/><TextBlock Text="Minimize Dashboard" FontSize="18" Foreground="White" Margin="3,0,0,0"/></StackPanel>
+       <StackPanel x:Name="SignOutPrompt" Orientation="Horizontal" Cursor="Hand" MouseLeftButtonUp="CloseGameHint_OnMouseLeftButtonUp"><controls:BladePadGlyph Letter="X" Width="23" Height="23"/><TextBlock Text="{Binding Dashboard.RunningGameFooterActionText}" FontSize="18" Foreground="White" Margin="3,0,0,0"/></StackPanel>
       </StackPanel>
       <StackPanel HorizontalAlignment="Right"><StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Back" FontSize="21" Foreground="White" Margin="0,0,3,0"/><controls:BladePadGlyph Letter="B" Width="23" Height="23"/></StackPanel><StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><TextBlock Text="Select" FontSize="21" Foreground="White" Margin="0,0,3,0"/><controls:BladePadGlyph Letter="A" Width="23" Height="23"/></StackPanel></StackPanel>
      </Grid>

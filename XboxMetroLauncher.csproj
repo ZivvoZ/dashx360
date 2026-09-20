@@ -26,10 +26,10 @@
     <ApplicationIcon>Assets\Misc\256x256.ico</ApplicationIcon>
     <RootNamespace />
     <Product>DashX360</Product>
-    <Version>1.3.0</Version>
-    <InformationalVersion>v1.3.0-blades-public</InformationalVersion>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
+    <Version>1.3.1</Version>
+    <InformationalVersion>v1.3.1-blades-public</InformationalVersion>
+    <AssemblyVersion>1.3.1.0</AssemblyVersion>
+    <FileVersion>1.3.1.0</FileVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 

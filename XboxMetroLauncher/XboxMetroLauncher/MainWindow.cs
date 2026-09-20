@@ -472,6 +472,10 @@ public partial class MainWindow : Window
 		else if (DashboardInputRouter.TryMapKey(e, out action))
 		{
 			e.Handled = true;
+			if (TryRouteInputToGuide(action))
+			{
+				return;
+			}
 			if (TryHandleBladesAchievementsInputEarly(action))
 			{
 				return;
@@ -521,6 +525,10 @@ public partial class MainWindow : Window
 	private void HandleControllerInputAction(DashboardInputAction action)
 	{
 		HideMouseCursorForController();
+		if (TryRouteInputToGuide(action))
+		{
+			return;
+		}
 		if (TryHandleBladesAchievementsInputEarly(action))
 		{
 			return;
@@ -547,6 +555,29 @@ public partial class MainWindow : Window
 			App.LogException(exception, "MainWindow.HandleInputAction");
 			_isAnimatingTab = false;
 			_isFocusUpdateQueued = false;
+		}
+	}
+
+	private bool TryRouteInputToGuide(DashboardInputAction action)
+	{
+		try
+		{
+			IGuideWindow? guideWindow = _guideWindow;
+			if (guideWindow == null)
+			{
+				return false;
+			}
+			if (guideWindow.IsGuideOpen)
+			{
+				guideWindow.HandleInput(action);
+				return true;
+			}
+			return guideWindow.IsTransitioning;
+		}
+		catch (Exception exception)
+		{
+			App.LogException(exception, "MainWindow.TryRouteInputToGuide");
+			return true;
 		}
 	}
 
@@ -954,6 +985,24 @@ public partial class MainWindow : Window
 		_audioService.WarmUp("guide-blade-switch-2");
 		_audioService.WarmUp("guide-blade-switch-3");
 		_audioService.WarmUp("guide-blade-switch-4");
+		WarmUpBladesDashboardAudio();
+	}
+
+	private void WarmUpBladesDashboardAudio()
+	{
+		_audioService.WarmUp("page-left");
+		_audioService.WarmUp("page-right");
+		_audioService.WarmUp("tab");
+		_audioService.WarmUp("select");
+		_audioService.WarmUp("back");
+		_audioService.WarmUp("focus");
+		_audioService.WarmUp("hover");
+		_audioService.WarmUp("menu-in");
+		_audioService.WarmUp("menu-out");
+		for (int index = 0; index <= 6; index++)
+		{
+			_audioService.WarmUp($"tab-switch-{index}");
+		}
 	}
 
 	private void HideGuide()

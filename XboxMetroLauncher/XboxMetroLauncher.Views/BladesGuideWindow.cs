@@ -8,9 +8,11 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
 using XboxMetroLauncher.Input;
 using XboxMetroLauncher.ViewModels;
 
@@ -63,7 +65,7 @@ public partial class BladesGuideWindow : Window, IGuideWindow
     public bool Open(bool resetToHome = true)
     {
         if (IsTransitioning) return false;
-        if (IsVisible) { Activate(); return false; }
+        if (IsVisible) { ForceForegroundAndCaptureInput(); return false; }
         _viewModel.Start(resetToHome);
         _page = "home";
         PageTitle.Text = "";
@@ -77,7 +79,7 @@ public partial class BladesGuideWindow : Window, IGuideWindow
         Dimmer.Opacity = 0;
         WindowState = WindowState.Maximized;
         Show();
-        Activate();
+        ForceForegroundAndCaptureInput();
         IsTransitioning = true;
         _ = OpenAsync(resetToHome);
         return true;
@@ -115,6 +117,7 @@ public partial class BladesGuideWindow : Window, IGuideWindow
         {
             await Task.WhenAll(Animate(Slide,TranslateTransform.XProperty,-Shell.Width,240), Animate(Dimmer,OpacityProperty,0,240));
             if (_closed) return;
+            ReleaseInputCapture();
             Hide();
             HiddenCompleted?.Invoke(this,EventArgs.Empty);
         }
@@ -337,6 +340,91 @@ public partial class BladesGuideWindow : Window, IGuideWindow
         if(Volume.IsVisible) Volume.Focus();
     }
     private void DashboardClick(object sender,RoutedEventArgs e) => GoDashboard();
+
+    private void MinimizeDashboardHint_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        _viewModel.PlaySound("guide-select");
+        _viewModel.MinimizeDashboard();
+        e.Handled = true;
+    }
+
+    private void CloseGameHint_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        _viewModel.HandleFooterX();
+        e.Handled = true;
+    }
+
+    private void ForceForegroundAndCaptureInput()
+    {
+        WindowInteropHelper windowInteropHelper = new WindowInteropHelper(this);
+        nint handle = windowInteropHelper.Handle;
+        if (handle == IntPtr.Zero)
+        {
+            handle = windowInteropHelper.EnsureHandle();
+        }
+        nint foregroundWindow = GetForegroundWindow();
+        uint currentThreadId = GetCurrentThreadId();
+        uint foregroundThreadId = foregroundWindow != IntPtr.Zero ? GetWindowThreadProcessId(foregroundWindow, out _) : 0u;
+        bool attached = false;
+        try
+        {
+            if (foregroundThreadId != 0 && foregroundThreadId != currentThreadId)
+            {
+                attached = AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            }
+            Activate();
+            BringWindowToTop(handle);
+            SetForegroundWindow(handle);
+            SetActiveWindow(handle);
+            SetFocus(handle);
+            Focus();
+            Keyboard.Focus(GuideRoot);
+            Mouse.Capture(GuideRoot, CaptureMode.SubTree);
+        }
+        finally
+        {
+            if (attached)
+            {
+                AttachThreadInput(currentThreadId, foregroundThreadId, false);
+            }
+        }
+    }
+
+    private static void ReleaseInputCapture()
+    {
+        if (Mouse.Captured != null)
+        {
+            Mouse.Capture(null);
+        }
+    }
+
+    [DllImport("user32.dll")]
+    private static extern nint GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(nint hWnd);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool BringWindowToTop(nint hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern nint SetFocus(nint hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern nint SetActiveWindow(nint hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(nint hWnd, out uint processId);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+
     private void GoDashboard()
     {
         _viewModel.ResetToXboxHome();
