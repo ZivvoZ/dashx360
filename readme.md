@@ -2,8 +2,6 @@
 
 **The first fanmade recreation of the Xbox 360 Metro Dashboard experience for Windows — now featuring both Metro and Blades dashboards.**
 
-If you like my work, feel free to donate to my ko-fi! however money will never be needed to use this! https://Ko-fi.com/zivvoz
-
 Original app credit: ZivvoZ
 https://youtube.com/@zivvoz
 
