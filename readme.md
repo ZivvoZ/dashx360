@@ -1,6 +1,6 @@
 # DashX360 — Xbox 360 Metro & Blades Dashboards for Windows
 
-**The first fanmade recreation of the Xbox 360 Metro Dashboard experience for Windows — now featuring both Metro and Blades dashboards.**
+**The first fan-made recreation of the Xbox 360 Metro Dashboard experience for Windows — now featuring both Metro and Blades dashboards.**
 
 Original app credit: ZivvoZ
 https://youtube.com/@zivvoz
@@ -49,11 +49,9 @@ The Blades recreation is still being improved, and some animations and smaller v
 
 ### Working on the Project
 
-DashX360 is open for people who want to help improve it. If you use this project, modify it, or build on top of it, please credit the original project and creator:
+DashX360 is open for people who want to help improve it. If you use this project, modify it, or build on top of it, please credit Xbox/Microsoft, the project and the project's creator:
 
-Original project by zivvoz / DashX360
-
-Do not reupload or redistribute modified versions in a way that makes it look like you created the original project from scratch.
+Original project by zivvoz / DashX360 - inspired by Microsoft's Xbox 360 Dashboard's interfaces.
 
 ## Controls
 
@@ -65,5 +63,8 @@ Do not reupload or redistribute modified versions in a way that makes it look li
 
 ## Legal / Disclaimer
 
-This is an unofficial, non-commercial fan project. Xbox, Xbox 360, Xbox LIVE, Microsoft, and related names, logos, and imagery are property of Microsoft. This project is not affiliated with, endorsed by, or sponsored by Microsoft.
+DashX360 is an independent, unoffical fan-made software project developed for my own personal and historic interest. It recreates aspects of the Xbox 360 Dashboard experience on Windows and is not devloped, operated, authorized, endorsed, or sponsored by Microsoft or Xbox. DashX360 is not an official Xbox product, service, emulator, or replacement for Microsoft's software or online services. It does not provide access to official Xbox LIVE services. The project is provided free of charge and is not intended to imply ownership of, or claim rights to Microsoft's copyrighted material.
 
+DashX360 incorporates some original Xbox 360 assets, including sounds and graphical elements obtained from the Xbox 360. These materials remain the property of their respective rights holders. Their inclusion does not imply authorization, endorsement, or affiliation with Microsoft or Xbox.
+
+Xbox, Xbox 360, Xbox Live, Microsoft and their trademarks, names, logos, and other copyrighted material belong to their respective owners. All rights remain with their respective owners. The DashX360 name and original code are not intended to imply any affiliation with Microsoft or Xbox.
