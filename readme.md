@@ -2,7 +2,6 @@
 
 **The first fan-made recreation of the Xbox 360 Metro Dashboard experience for Windows — now featuring both Metro and Blades dashboards.**
 
-Original app credit: ZivvoZ
 https://youtube.com/@zivvoz
 
 ## DashX360 v1.3.0 — Blades Update
