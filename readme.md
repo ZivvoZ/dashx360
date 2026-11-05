@@ -4,7 +4,7 @@
 
 https://youtube.com/@zivvoz
 
-![Dashboard Preview](dashx360/dashboard%20image.png)
+![Dashboard Preview](dashx360/dashboardimage.png)
 
 ## DashX360 v1.3.0 — Blades Update
 
