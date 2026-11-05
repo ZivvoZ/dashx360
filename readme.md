@@ -4,9 +4,10 @@
 
 https://youtube.com/@zivvoz
 
-![Dashboard Preview](dashboardimage.png)
+![Dashboard Preview](metropreview.png)
 
 ## DashX360 v1.3.0 — Blades Update
+![Dashboard Preview](bladespreview.png)
 
 ### What's New
 
